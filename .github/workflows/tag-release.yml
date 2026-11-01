@@ -76,6 +76,10 @@ jobs:
         run: node scripts/verify-docs-published.mjs
       - name: Recheck tag and registry immediately before publication
         run: node scripts/tag-release-cli.mjs preflight
+      - name: Refuse an existing or unverifiable GitHub Release before npm publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/github-release-absent.mjs
       - name: Publish the inspected archive with provenance
         run: npm publish "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" --access public --tag "${{ steps.identity.outputs.channel }}" --provenance
       - name: Verify registry identity, integrity and bytes
@@ -92,13 +96,16 @@ jobs:
           node scripts/tag-release-cli.mjs verify-provenance "$RUNNER_TEMP/provenance-audit.json" "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz"
       - name: Recheck tag before release creation
         run: node scripts/tag-release-cli.mjs verify-tag
+      - name: Recheck release absence immediately before creation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/github-release-absent.mjs
       - name: Create release after package verification
         env:
           GH_TOKEN: ${{ github.token }}
           CHANNEL: ${{ steps.identity.outputs.channel }}
         run: |
           set -euo pipefail
-          gh release view "$RELEASE_TAG" >/dev/null 2>&1 && { echo 'Release already exists; use recovery review' >&2; exit 1; }
           if [ "$CHANNEL" = next ]; then
             gh release create "$RELEASE_TAG" --verify-tag --generate-notes --prerelease
           else

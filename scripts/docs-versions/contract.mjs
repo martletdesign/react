@@ -74,9 +74,11 @@ export function validateCatalog(catalog,previous){
     const parsed=parseVersion(entry.version);need(!seen.has(entry.version)&&parsed.channel===entry.channel&&validDigest(entry.manifestSha256)&&typeof entry.supported==='boolean','Invalid catalog entry');seen.add(entry.version);
     need(Array.isArray(entry.topics)&&entry.topics.every(validPath)&&new Set(entry.topics).size===entry.topics.length,'Invalid topic list');
   }
-  const latest=catalog.versions.find(x=>x.version===catalog.latestStable);need(latest?.channel==='stable'&&latest.supported,'Latest must be a supported stable release');
+  const stable=catalog.versions.filter(x=>x.channel==='stable'&&x.supported);
+  const latest=catalog.versions.find(x=>x.version===catalog.latestStable);
+  need(stable.length ? latest?.channel==='stable'&&latest.supported : catalog.latestStable===null,'Latest must be a supported stable release, or null when none exist');
   const compare=(a,b)=>{const x=a.split('.').map(BigInt),y=b.split('.').map(BigInt);for(let i=0;i<3;i++)if(x[i]!==y[i])return x[i]>y[i]?1:-1;return 0;};
-  need(catalog.versions.filter(x=>x.channel==='stable'&&x.supported).every(x=>compare(latest.version,x.version)>=0),'Latest does not identify the newest supported stable release');
+  need(stable.every(x=>compare(latest.version,x.version)>=0),'Latest does not identify the newest supported stable release');
   if(previous){
     need(previous.family===catalog.family&&previous.framework===catalog.framework,'Catalog authority changed');
     for(const old of previous.versions){const now=catalog.versions.find(x=>x.version===old.version);need(now&&now.manifestSha256===old.manifestSha256&&now.channel===old.channel&&isDeepStrictEqual(now.topics,old.topics),'Historical snapshot removed or rewritten');}

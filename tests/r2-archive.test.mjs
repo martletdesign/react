@@ -24,6 +24,24 @@ test('conditional creation, complete manifest and independently retrievable byte
  await upload(e,'2.1.0',Buffer.from('<h1>second</h1>'));assert.equal(await (await send(e,'/docs/v/2.0.0/')).text(),first.toString());
  assert.equal((await send(e,'/docs/v/2.0.0/unknown.js')).status,404);
 });
+test('committed version directories redirect before relative asset resolution',async()=>{
+ const e=env();e.DEPLOY_PREFIX='/preview';const html=Buffer.from('<link rel="stylesheet" href="style.css">'),css=Buffer.from('body{}'),zip=Buffer.from('zip');
+ const manifest=manifestFor('2.0.0',html);manifest.files.push({path:'guide/index.html',size:html.length,sha256:sha(html)},{path:'guide/style.css',size:css.length,sha256:sha(css)},{path:'download.zip',size:zip.length,sha256:sha(zip)});
+ for(const [path,body] of [['index.html',html],['guide/index.html',html],['guide/style.css',css],['download.zip',zip]])assert.equal((await send(e,`/preview/_archive/v/2.0.0/${path}`,{method:'PUT',body})).status,201);
+ const bytes=Buffer.from(JSON.stringify(manifest));assert.equal((await send(e,'/preview/_archive/v/2.0.0/manifest.json',{method:'PUT',body:bytes,headers:{'x-manifest-sha256':sha(bytes)}})).status,201);
+ for(const path of ['/preview/docs/v/2.0.0','/preview/docs/v/2.0.0/guide']){const r=await send(e,path);assert.equal(r.status,308);assert.equal(r.headers.get('location'),`${path}/`);assert.equal((await send(e,path,{method:'HEAD'})).status,308);}
+ assert.equal((await send(e,'/preview/docs/v/2.0.0/guide/style.css')).headers.get('content-type'),'text/css; charset=utf-8');
+ assert.equal((await send(e,'/preview/docs/v/2.0.0/download.zip')).headers.get('content-type'),'application/zip');
+ assert.equal((await send(e,'/preview/docs/v/2.0.0/missing')).status,404);
+});
+test('oversized chunked writes are cancelled before buffering',async()=>{
+ for(const [path,chunk] of [['/_archive/v/2.0.0/large.bin',1024*1024],['/_archive/catalog',128*1024],['/_archive/promotion',16*1024]]){
+  const e=env();let produced=0,cancelled=false;
+  const stream=new ReadableStream({pull(c){produced++;c.enqueue(new Uint8Array(chunk));if(produced===24)c.close();},cancel(){cancelled=true;}});
+  const req=new Request(`https://example.invalid${path}`,{method:'PUT',body:stream,duplex:'half',headers:{authorization:`Bearer ${token}`}});
+  assert.equal((await worker.fetch(req,e)).status,413);assert.equal(cancelled,true);assert.ok(produced<24);assert.equal(e.ARCHIVES.data.size,0);
+ }
+});
 test('rejects unauthorized writes, incomplete commits, replacement and corrupted objects',async()=>{
  const e=env(),b=Buffer.from('expected'),m=Buffer.from(JSON.stringify(manifestFor('2.0.0',b))),root='/_archive/v/2.0.0/';
  assert.equal((await send(e,root+'index.html',{method:'PUT',body:b,auth:false})).status,401);
@@ -52,6 +70,21 @@ test('catalog history is append-only and competing pointer advances cannot both 
  const advance=value=>send(e,'/_archive/catalog',{method:'PUT',body:JSON.stringify({...successor,description:value}),headers:{'x-previous-catalog-sha256':sha(a)}});
  const results=await Promise.all([advance('one'),advance('two')]);assert.deepEqual(results.map(x=>x.status).sort(),[201,409]);
  assert.equal((await send(e,`/docs/catalog-history/${sha(a)}.json`)).status,200);
+});
+
+test('a prerelease-only catalog is retained without promoting latest',async()=>{
+ const e=env(),version='2.0.0-rc.1',m=await upload(e,version,Buffer.from('candidate'));
+ const catalog={schemaVersion:1,family:'martlet',framework:'react',previousSha256:null,latestStable:null,versions:[{version,channel:'prerelease',manifestSha256:sha(m),supported:true,topics:['index.html']}]};
+ assert.equal((await send(e,'/_archive/catalog',{method:'PUT',body:JSON.stringify({...catalog,latestStable:version}),headers:{'x-previous-catalog-sha256':'none'}})).status,400);
+ const first=Buffer.from(JSON.stringify(catalog));
+ assert.equal((await send(e,'/_archive/catalog',{method:'PUT',body:first,headers:{'x-previous-catalog-sha256':'none'}})).status,201);
+ assert.equal((await send(e,'/docs/')).status,404);
+ assert.equal(await (await send(e,`/docs/v/${version}/`)).text(),'candidate');
+ const stable=await upload(e,'2.0.0',Buffer.from('stable'));
+ const next={...catalog,previousSha256:sha(first),latestStable:'2.0.0',versions:[...catalog.versions,{version:'2.0.0',channel:'stable',manifestSha256:sha(stable),supported:true,topics:['index.html']}]};
+ assert.equal((await send(e,'/_archive/catalog',{method:'PUT',body:JSON.stringify({...next,latestStable:null}),headers:{'x-previous-catalog-sha256':sha(first)}})).status,400);
+ assert.equal((await send(e,'/_archive/catalog',{method:'PUT',body:JSON.stringify(next),headers:{'x-previous-catalog-sha256':sha(first)}})).status,201);
+ assert.equal(await (await send(e,`/docs/v/${version}/`)).text(),'candidate');
 });
 
 test('subpath routes serve only the configured prefix',async()=>{

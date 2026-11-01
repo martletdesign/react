@@ -1,5 +1,6 @@
 // Append-only catalog objects plus a CAS-protected pointer. A bucket owner can
 // still bypass this code, so clients must pin an independently trusted digest.
+import {readLimited} from './read-limited.mjs';
 const enc=new TextEncoder(),hex=/^[a-f0-9]{64}$/;
 const version=/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 const path=/^[A-Za-z0-9._~/-]+$/;
@@ -10,9 +11,9 @@ function parse(bytes,env){
  const c=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
  if(c.schemaVersion!==1||c.family!==env.FAMILY||c.framework!=='react'||!Array.isArray(c.versions)||!c.versions.length||c.versions.length>1000||!(c.previousSha256===null||hex.test(c.previousSha256||'')))throw Error('invalid catalog');
  const seen=new Set();for(const e of c.versions){const m=version.exec(e.version||'');if(!m||seen.has(e.version)||(m[4]&&m[4].split('.').some(x=>/^\d+$/.test(x)&&x.length>1&&x[0]==='0'))||e.channel!==(m[4]?'prerelease':'stable')||!hex.test(e.manifestSha256||'')||typeof e.supported!=='boolean'||!Array.isArray(e.topics)||e.topics.length>10000||new Set(e.topics).size!==e.topics.length||e.topics.some(x=>typeof x!=='string'||!path.test(x)||x.split('/').some(p=>!p||p==='.'||p==='..')))throw Error('invalid catalog entry');seen.add(e.version);}
- const latest=c.versions.find(x=>x.version===c.latestStable);if(!latest||latest.channel!=='stable'||!latest.supported)throw Error('invalid latest');
+ const stable=c.versions.filter(x=>x.channel==='stable'&&x.supported),latest=c.versions.find(x=>x.version===c.latestStable);if(stable.length?(!latest||latest.channel!=='stable'||!latest.supported):c.latestStable!==null)throw Error('invalid latest');
  const cmp=(a,b)=>{const x=a.split('.').map(BigInt),y=b.split('.').map(BigInt);for(let i=0;i<3;i++)if(x[i]!==y[i])return x[i]>y[i]?1:-1;return 0;};
- if(c.versions.some(x=>x.channel==='stable'&&x.supported&&cmp(x.version,latest.version)>0))throw Error('latest is not newest supported');
+ if(stable.some(x=>cmp(x.version,latest.version)>0))throw Error('latest is not newest supported');
  return c;
 }
 async function get(bucket,key){const obj=await bucket.get(key);if(!obj?.body)return null;return {bytes:new Uint8Array(await obj.arrayBuffer()),etag:obj.etag};}
@@ -23,7 +24,7 @@ export async function catalogRequest(request,env,authorize,pathname){
  const url=new URL(request.url),base=`${env.FAMILY}/react/`,bucket=env.ARCHIVES;
  if(pathname==='/_archive/catalog'){
   if(request.method!=='PUT')return bad(405,'method not allowed');if(!await authorize(request,env))return bad(401,'unauthorized');
-  const bytes=new Uint8Array(await request.arrayBuffer());if(bytes.length>1024*1024)return bad(413,'too large');
+  const bytes=await readLimited(request,1024*1024);if(!bytes)return bad(413,'too large');
   let c;try{c=parse(bytes,env);}catch{return bad(400,'invalid catalog');}
   try{
    const cur=await pointer(bucket,base),current=cur?await load(bucket,base+`catalogs/${cur.hash}.json`,cur.hash,env):null,digest=await sha(bytes);

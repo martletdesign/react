@@ -3,8 +3,16 @@ import assert from 'node:assert/strict';
 import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {sha256} from '../scripts/docs-versions/contract.mjs';
+import {sha256,validateCatalog} from '../scripts/docs-versions/contract.mjs';
 import {createSnapshot} from '../scripts/docs-versions/snapshot.mjs';
+
+test('prerelease-only catalogs have no latest stable version',()=>{
+  const entry={version:'2.0.0-rc.1',channel:'prerelease',manifestSha256:'a'.repeat(64),supported:true,topics:['index.html']};
+  const catalog={schemaVersion:1,family:'martlet',framework:'react',latestStable:null,versions:[entry]};
+  assert.equal(validateCatalog(catalog),catalog);
+  assert.throws(()=>validateCatalog({...catalog,latestStable:entry.version}),/Latest/);
+  assert.throws(()=>validateCatalog({...catalog,versions:[entry,{...entry,version:'1.0.0',channel:'stable'}]}),/Latest/);
+});
 
 test('a pinned local snapshot is created once, and older archives cannot be replaced or corrupted',async()=>{
   const root=await mkdtemp(join(tmpdir(),'docs-snapshot-'));try{
