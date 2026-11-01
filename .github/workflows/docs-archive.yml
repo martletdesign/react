@@ -33,6 +33,14 @@ jobs:
           export DOCS_BASELINE_SHA256="$(sha256sum "$DOCS_BASELINE_PATH" | cut -d' ' -f1)"
           export RELEASE_TAG="v$(node -p "require('./package.json').version")"
           node scripts/docs-versions/build-release.mjs
+      - name: Rehearse archive through the in-memory R2 gateway
+        env:
+          DOCS_FAMILY: martlet
+          DOCS_DEPLOY_PREFIX: ${{ matrix.prefix }}
+        run: |
+          export DOCS_ARCHIVE_ROOT="$RUNNER_TEMP/archives"
+          export DOCS_VERSION="$(node -p "require('./package.json').version")"
+          node scripts/docs-versions/rehearse-r2.mjs
       - run: npx playwright install --with-deps ${{ matrix.browser }}
       - run: node scripts/docs-versions/browser-check.mjs "$RUNNER_TEMP/archives" "$DOCS_DEPLOY_PREFIX" martlet
         env:
