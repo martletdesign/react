@@ -6,7 +6,7 @@ src=$(pwd)
 work=$(mktemp -d "${TMPDIR:-/tmp}/nightjar-react-rehearsal.XXXXXXXX")
 trap 'rm -r "$work"' EXIT
 mkdir "$work/source" "$work/archive" "$work/out"
-cp -a "$src/.gitignore" "$src/.github" "$src/src" "$src/scripts" "$src/tests" "$src/build.mjs" "$src/tsconfig.json" "$src/package.json" "$src/package-lock.json" "$src/LICENSE" "$src/NOTICE.md" "$src/CHANGELOG.md" "$src/README.md" "$work/source/"
+git -C "$src" archive HEAD | tar -x -C "$work/source"
 cd "$work/source"
 node - <<'NODE'
 const fs=require('fs');
