@@ -1,5 +1,9 @@
 # @martlet/react changelog
 
+## 0.2.0 — unpublished transfer candidate
+
+Prepared standalone source, exact core dependency and independent build. This is not an approved release. Existing version 0.1.0 is published; the historical heading below records its earlier preparation state.
+
 ## 0.1.0 — experimental candidate, unpublished
 
 Initial 22-component React 19 API with native form controls, modal dialog, manual-activation tabs, article compositions, table and pagination. Includes family CSS, TypeScript declarations and MIT source.
