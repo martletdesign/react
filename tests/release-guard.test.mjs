@@ -8,7 +8,7 @@ const lock = JSON.parse(await readFile(new URL('../package-lock.json', import.me
 const repository = pkg.repository.url.replace(/^git\+https:\/\/github.com\//, '').replace(/\.git$/, '');
 const input = {tag:`v${pkg.version}`,pkg,source:{version:pkg.version},lock,repository,expectedRepository:repository,expectedName:pkg.name};
 test('version identity and exact core dependency fail closed', () => {
-  assert.equal(validateIdentity(input).channel, 'latest');
+  assert.equal(validateIdentity(input).channel, pkg.version.includes('-') ? 'next' : 'latest');
   assert.equal(releaseVersion('v1.2.3-rc.1').channel, 'next');
   for (const tag of ['v01.2.3','v1.2','v1.2.3-01','1.2.3']) assert.throws(() => releaseVersion(tag));
   assert.throws(() => validateIdentity({...input, tag:'v9.9.9'}));
