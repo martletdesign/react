@@ -1,4 +1,5 @@
 import {build,createServer} from 'vite';
+import {validBase} from './src/base.mjs';
 import {renderToString} from 'react-dom/server';
 import React from 'react';
 import {mkdir,readFile,writeFile,copyFile} from 'node:fs/promises';
@@ -10,7 +11,7 @@ import {peerDashboardURL} from './src/dashboard/peer.mjs';
 import {renderDocument} from './src/template.mjs';
 import {pageDataElement} from './src/page-data.mjs';
 const family=process.env.NIGHTJAR_FAMILY, base=process.env.NIGHTJAR_BASE || '/';
-if(!['martlet','krigsvold'].includes(family)||!/^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(base))throw Error('Provide a family and an absolute directory base');
+if(!['martlet','krigsvold'].includes(family)||!validBase(base))throw Error('Provide a family and an absolute directory base');
 const root=resolve('examples/react-catalog'),configFile=resolve(root,'vite.config.mjs');
 peerDashboardURL(process.env.NIGHTJAR_PEER_URL,'analytics');
 // Only the checked-in stress fixture opts into the shared HTML/MathML allowlist.

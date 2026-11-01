@@ -1,10 +1,11 @@
+import {validBase} from '../base.mjs';
 import {useEffect,useId,useRef,useState,type MouseEvent,type PointerEvent,type FocusEvent,type CSSProperties} from 'react';
 import {Button,family} from 'catalog-family';
 import {peerDashboardURL} from './peer.mjs';
 import './dashboard-nav.css';
 export type DashboardRoute='analytics'|'administration'|'operations';
 const entries:{id:DashboardRoute;label:string}[]=[{id:'analytics',label:'Analytics'},{id:'administration',label:'Administration'},{id:'operations',label:'Operations'}];
-function routeBase(base:string){if(!/^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(base))throw Error('Dashboard base must be an absolute directory path');return base.replace(/\/$/,'');}
+function routeBase(base:string){if(!validBase(base))throw Error('Dashboard base must be an absolute directory path');return base.replace(/\/$/,'');}
 export function DashboardNav({current,base=import.meta.env.BASE_URL}:{current:DashboardRoute;base?:string}){
  const [enhanced,setEnhanced]=useState(false),[open,setOpen]=useState(false),toggle=useRef<HTMLButtonElement>(null),id=useId(),prefix=routeBase(base);
  const tokens=Object.fromEntries(['text','bg','panel','line','link','accent'].map(name=>[`--rd-${name}`,`var(--${family}-${name})`])) as CSSProperties;
