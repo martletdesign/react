@@ -1,0 +1,12 @@
+import {hydrateRoot} from 'react-dom/client';
+import {App} from './app';
+import type {CatalogPageData} from './data-types';
+const relative=location.pathname.slice(import.meta.env.BASE_URL.replace(/\/$/, '').length);
+const id=/^\/examples\/?$/.test(relative)?'index':relative.match(/^\/examples\/([^/]+)\/?$/)?.[1];
+const element=document.getElementById('catalog-page-data');
+if(!id||!element)throw Error('Unknown catalog path or missing page data');
+const data=JSON.parse(element.textContent||'') as CatalogPageData;
+if(data.id!==id)throw Error('Catalog page data does not match its route');
+const mount=document.getElementById('root')!;
+if(data.requiresSpecial)import('./special').then(({renderSpecial})=>hydrateRoot(mount,<App data={data} special={renderSpecial}/>));
+else hydrateRoot(mount,<App data={data}/>);

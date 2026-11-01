@@ -1,0 +1,20 @@
+.recipe-cards {list-style:none; padding:0; display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:1.5rem}
+.recipe-cards h3,.recipe-listing h3 {margin-bottom:.3rem}
+.recipe-listing {list-style:none;padding:0}.recipe-listing li {margin-block:1.5rem}
+.recipe-meta {font-size:.875rem}.recipe-actions {list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:1rem}
+[data-example] section {margin-block:2.5rem;overflow-wrap:anywhere}
+@media print {.recipe-listing [hidden] {display:list-item !important} nav[aria-label$=" pages"] {display:none}}
+.recipe-prose {overflow-wrap:anywhere}
+[data-example] figure {margin-inline:0}[data-example] figure img {max-width:100%;height:auto}
+
+.demo-fields {display:grid;gap:.5rem;min-width:0}.demo-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+
+/* Keep local form controls legible and responsive to the user's root text size. */
+.demo-fields :is(input:not([type=checkbox]),select,textarea) {font-size:1rem;min-width:0;max-width:100%;box-sizing:border-box}
+
+.recipe-action {text-decoration:none}
+.recipe-local-index { margin-block: 2rem; }
+.recipe-local-index p { font-weight: 700; }
+.recipe-local-index ol { list-style: none; padding: 0; }
+.recipe-local-index li { margin-block: .6rem; }
+@media print { .recipe-local-index { display:none !important; } }
