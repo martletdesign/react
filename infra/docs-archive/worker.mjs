@@ -53,7 +53,7 @@ export default { async fetch(request, env) {
   if(prefixPath && (!/^\/(?:[A-Za-z0-9._~-]+)(?:\/[A-Za-z0-9._~-]+)*$/.test(prefixPath)||prefixPath.split('/').some(x=>x==='.'||x==='..')))return fail(503,'invalid deployment prefix');
   if(prefixPath&&!url.pathname.startsWith(prefixPath+'/'))return fail(404,'not found');
   const pathname=url.pathname.slice(prefixPath.length);
-  if(pathname==='/_archive/catalog'||pathname==='/docs/catalog.json'||pathname.startsWith('/docs/catalog-history/'))return catalogRequest(request,env,authorized,pathname);
+  if(pathname==='/_archive/catalog'||pathname==='/docs/catalog.json'||pathname==='/docs/versions/'||pathname.startsWith('/docs/catalog-history/'))return catalogRequest(request,env,authorized,pathname);
   if(pathname==='/_archive/promotion'||pathname==='/docs/latest.json'||pathname==='/docs/'||pathname.startsWith('/docs/promotion-history/'))return promotionRequest(request,env,authorized,pathname,prefixPath);
   const segments = pathname.split('/');
   const upload = segments[1] === '_archive' && segments[2] === 'v';

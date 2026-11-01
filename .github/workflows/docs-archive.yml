@@ -48,6 +48,10 @@ jobs:
           DOCS_DEPLOY_PREFIX: ${{ matrix.prefix }}
   history:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        prefix: ['', '/preview']
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -56,3 +60,5 @@ jobs:
         with:
           node-version: '24.19.0'
       - run: python3 scripts/docs-versions/rehearse-history.py
+        env:
+          DOCS_DEPLOY_PREFIX: ${{ matrix.prefix }}

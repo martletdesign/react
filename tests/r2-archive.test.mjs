@@ -79,11 +79,13 @@ test('a prerelease-only catalog is retained without promoting latest',async()=>{
  const first=Buffer.from(JSON.stringify(catalog));
  assert.equal((await send(e,'/_archive/catalog',{method:'PUT',body:first,headers:{'x-previous-catalog-sha256':'none'}})).status,201);
  assert.equal((await send(e,'/docs/')).status,404);
+ const index=await send(e,'/docs/versions/');assert.equal(index.status,200);const indexHTML=await index.text();assert.match(indexHTML,/2\.0\.0-rc\.1/);assert.match(indexHTML,/prerelease/);assert.match(indexHTML,/href="\/docs\/v\/2\.0\.0-rc\.1\/"/);
  assert.equal(await (await send(e,`/docs/v/${version}/`)).text(),'candidate');
  const stable=await upload(e,'2.0.0',Buffer.from('stable'));
  const next={...catalog,previousSha256:sha(first),latestStable:'2.0.0',versions:[...catalog.versions,{version:'2.0.0',channel:'stable',manifestSha256:sha(stable),supported:true,topics:['index.html']}]};
  assert.equal((await send(e,'/_archive/catalog',{method:'PUT',body:JSON.stringify({...next,latestStable:null}),headers:{'x-previous-catalog-sha256':sha(first)}})).status,400);
  assert.equal((await send(e,'/_archive/catalog',{method:'PUT',body:JSON.stringify(next),headers:{'x-previous-catalog-sha256':sha(first)}})).status,201);
+ assert.match(await (await send(e,'/docs/versions/')).text(),/href="\/docs\/v\/2\.0\.0\/"/);
  assert.equal(await (await send(e,`/docs/v/${version}/`)).text(),'candidate');
 });
 
@@ -93,7 +95,11 @@ test('subpath routes serve only the configured prefix',async()=>{
  assert.equal((await send(e,'/preview/_archive/v/2.0.0/index.html',{method:'PUT',body:b})).status,201);
  assert.equal((await send(e,'/preview/_archive/v/2.0.0/manifest.json',{method:'PUT',body:m,headers:{'x-manifest-sha256':sha(m)}})).status,201);
  assert.equal(await (await send(e,'/preview/docs/v/2.0.0/')).text(),'x');
+ const c={schemaVersion:1,family:'martlet',framework:'react',previousSha256:null,latestStable:'2.0.0',versions:[{version:'2.0.0',channel:'stable',manifestSha256:sha(m),supported:true,topics:['index.html']}]};
+ assert.equal((await send(e,'/preview/_archive/catalog',{method:'PUT',body:JSON.stringify(c),headers:{'x-previous-catalog-sha256':'none'}})).status,201);
+ const index=await send(e,'/preview/docs/versions/');assert.equal(index.status,200);assert.match(await index.text(),/href="\/preview\/docs\/v\/2\.0\.0\/"/);assert.equal((await send(e,'/preview/docs/versions/',{method:'HEAD'})).status,200);
  assert.equal((await send(e,'/docs/v/2.0.0/')).status,404);
+ assert.equal((await send(e,'/docs/versions/')).status,404);
 });
 
 test('promotion and explicit withdrawal rollback retain archives and promotion history',async()=>{

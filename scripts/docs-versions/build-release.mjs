@@ -47,7 +47,7 @@ try{
   if(!/^[A-Za-z0-9._~/-]+$/.test(topic)||!html.includes('</head>')||!html.includes('<body>'))throw Error(`Unexpected HTML: ${topic}`);
   for(const m of html.matchAll(/\b(?:href|src)=["']([^"']+)["']/g))if(m[1].startsWith('/')&&!m[1].startsWith(base))throw Error(`Link escapes archive base: ${m[1]}`);
   const links=baseline.versions.map(x=>`<li><a href="${versionTopicURL(baseline,x.version,topic,prefix||'/')}">v${x.version}${x.version===baseline.latestStable?' (latest stable)':''}${x.supported?'':' (unsupported)'}${x.channel==='prerelease'?' (prerelease)':''}</a></li>`).join('');
-  const nav=`<nav aria-label="Documentation versions" data-version-nav data-topic="${topic}"><p>React documentation v${version}</p><ul><li><a aria-current="page" href="${base}${topic}">v${version} (current)</a></li>${links}</ul></nav>`;
+  const nav=`<nav aria-label="Documentation versions" data-version-nav data-topic="${topic}"><p>React documentation v${version}</p><ul><li><a aria-current="page" href="${base}${topic}">v${version} (current)</a></li>${links}</ul><p><a href="${prefix}/docs/versions/">All documentation versions</a></p></nav>`;
   html=html.replace('</head>',`<meta name="robots" content="noindex, follow"><script type="module" src="${base}version-navigation.js"></script></head>`).replace('</body>',`${nav}</body>`);
   await writeFile(path,html);
  }

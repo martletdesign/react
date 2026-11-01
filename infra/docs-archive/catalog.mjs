@@ -50,6 +50,14 @@ export async function catalogRequest(request,env,authorize,pathname){
   if(pathname==='/docs/catalog.json'){
    const p=await pointer(bucket,base);if(!p)return bad(404,'catalog unavailable');const c=await load(bucket,base+`catalogs/${p.hash}.json`,p.hash,env);return json(request.method==='HEAD'?null:c.bytes);
   }
+  if(pathname==='/docs/versions/'){
+   const p=await pointer(bucket,base);if(!p)return bad(404,'catalog unavailable');
+   const {catalog:c}=await load(bucket,base+`catalogs/${p.hash}.json`,p.hash,env),prefix=env.DEPLOY_PREFIX||'';
+   // Catalog versions and language have already passed strict allowlist validation.
+   const items=c.versions.map(v=>`<li><a href="${prefix}/docs/v/${v.version}/">v${v.version}</a>${v.version===c.latestStable?' (latest stable)':''}${v.channel==='prerelease'?' (prerelease)':''}${v.supported?'':' (unsupported)'}</li>`).join('');
+   const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, follow"><title>React documentation versions</title></head><body><main><h1>React documentation versions</h1><ul>${items}</ul></main></body></html>`;
+   return new Response(request.method==='HEAD'?null:html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','content-security-policy':"default-src 'none'; base-uri 'none'",'x-content-type-options':'nosniff','x-robots-tag':'noindex, follow'}});
+  }
   const match=/^\/docs\/catalog-history\/([a-f0-9]{64})\.json$/.exec(pathname);
   if(match){const c=await load(bucket,base+`catalogs/${match[1]}.json`,match[1],env);return json(request.method==='HEAD'?null:c.bytes,'public, max-age=31536000, immutable');}
   return bad(404,'not found');
