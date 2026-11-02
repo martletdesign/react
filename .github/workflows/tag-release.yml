@@ -11,8 +11,10 @@ jobs:
   verify:
     if: ${{ false }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         browser: [chromium, firefox, webkit]
     steps:
@@ -24,12 +26,15 @@ jobs:
           node-version: '24.19.0'
       - run: npm ci --ignore-scripts && npm test
       - run: npx playwright install --with-deps ${{ matrix.browser }}
+        timeout-minutes: 5
       - run: npm run test:browser
+        timeout-minutes: 4
         env:
           DESIGN_BROWSER: ${{ matrix.browser }}
   docs:
     if: ${{ false }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -42,6 +47,7 @@ jobs:
     needs: [verify, docs]
     if: ${{ false }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: react-production-release
     permissions:
       contents: write

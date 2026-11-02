@@ -2,12 +2,16 @@ name: React release rehearsal (nonpublishing)
 on:
   pull_request:
   push:
-    branches: ['feature/**']
+    branches: [main, develop]
 permissions:
   contents: read
+concurrency:
+  group: react-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   rehearsal:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -16,3 +20,4 @@ jobs:
         with:
           node-version: '24.19.0'
       - run: bash scripts/rehearse-release.sh martlet
+        timeout-minutes: 12

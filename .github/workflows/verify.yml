@@ -2,12 +2,16 @@ name: Verify standalone package
 on:
   pull_request:
   push:
-    branches: [develop, 'feature/**']
+    branches: [main, develop]
 permissions:
   contents: read
+concurrency:
+  group: react-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,8 +24,10 @@ jobs:
       - run: npm pack --ignore-scripts
   browser:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         browser: [chromium, firefox, webkit]
     steps:
@@ -32,6 +38,8 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps ${{ matrix.browser }}
+        timeout-minutes: 5
       - run: npm run test:browser
+        timeout-minutes: 4
         env:
           DESIGN_BROWSER: ${{ matrix.browser }}

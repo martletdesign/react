@@ -2,14 +2,19 @@ name: React documentation archive rehearsal
 on:
   pull_request:
   push:
-    branches: ['feature/**']
+    branches: [main, develop]
 permissions:
   contents: read
+concurrency:
+  group: react-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   archive:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         browser: [chromium, firefox, webkit]
         prefix: ['', '/preview']
@@ -42,13 +47,17 @@ jobs:
           export DOCS_VERSION="$(node -p "require('./package.json').version")"
           node scripts/docs-versions/rehearse-r2.mjs
       - run: npx playwright install --with-deps ${{ matrix.browser }}
+        timeout-minutes: 5
       - run: node scripts/docs-versions/browser-check.mjs "$RUNNER_TEMP/archives" "$DOCS_DEPLOY_PREFIX" martlet
+        timeout-minutes: 4
         env:
           DESIGN_BROWSER: ${{ matrix.browser }}
           DOCS_DEPLOY_PREFIX: ${{ matrix.prefix }}
   history:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
+      max-parallel: 1
       fail-fast: false
       matrix:
         prefix: ['', '/preview']
@@ -60,5 +69,6 @@ jobs:
         with:
           node-version: '24.19.0'
       - run: python3 scripts/docs-versions/rehearse-history.py
+        timeout-minutes: 9
         env:
           DOCS_DEPLOY_PREFIX: ${{ matrix.prefix }}
