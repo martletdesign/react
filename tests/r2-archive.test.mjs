@@ -14,7 +14,7 @@ const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const token='this-is-a-secret-token-32-bytes-minimum';
 const env=()=>({FAMILY:'martlet',ARCHIVES:new MockR2(),ARCHIVE_WRITE_TOKEN:token});
 const send=(env,path,{method='GET',body,auth=true,headers={}}={})=>worker.fetch(new Request('https://example.invalid'+path,{method,body,headers:{...(auth?{authorization:`Bearer ${token}`}:{}) ,...headers}}),env);
-function manifestFor(version,bytes) {return {schemaVersion:1,family:'martlet',framework:'react',docsVersion:version,basePath:`/docs/v/${version}/`,implementation:{kind:'npm',name:'@martlet/react',version,tag:`v${version}`},core:{name:'@martlet/core',version:'2.2.3',integrity:`sha512-${Buffer.alloc(64,1).toString('base64')}`},source:{repository:'martletdesign/react',commit:'a'.repeat(40),tag:`v${version}`},indexing:'noindex',files:[{path:'index.html',size:bytes.length,sha256:sha(bytes)}]};}
+function manifestFor(version,bytes) {return {schemaVersion:1,family:'martlet',framework:'react',docsVersion:version,basePath:`/docs/v/${version}/`,implementation:{kind:'npm',name:'@martlet/react',version,tag:`v${version}`},core:{name:'@martlet/core',version:'2.2.3',integrity:`sha512-${Buffer.alloc(64,1).toString('base64')}`},source:{repository:'martletdesign/react',commit:'a'.repeat(40),tag:`v${version}`},fixtures:{source:'repository'},toolchain:{node:'24.19.0'},createdAt:'2026-11-02T00:00:00.000Z',indexing:'noindex',files:[{path:'index.html',size:bytes.length,sha256:sha(bytes)}]};}
 async function upload(env,version,bytes){const root=`/_archive/v/${version}/`,manifest=Buffer.from(JSON.stringify(manifestFor(version,bytes)));assert.equal((await send(env,root+'index.html',{method:'PUT',body:bytes})).status,201);assert.equal((await send(env,root+'manifest.json',{method:'PUT',body:manifest,headers:{'x-manifest-sha256':sha(manifest)}})).status,201);return manifest;}
 test('conditional creation, complete manifest and independently retrievable bytes',async()=>{
  const e=env(),first=Buffer.from('<h1>first</h1>'),m=await upload(e,'2.0.0',first);
@@ -164,4 +164,20 @@ test('client resumes interrupted upload, verifies remote bytes, and rejects a su
   e.ARCHIVES.data.set('martlet/react/2.0.0/app.js',Buffer.from('tampered'));
   await assert.rejects(verifyPublished(options),/Missing archive file/);
  }finally{globalThis.fetch=originalFetch;await rm(root,{recursive:true,force:true});}
+});
+
+
+test('gateway rejects missing or invalid common manifest provenance before commit',async()=>{
+ const b=Buffer.from('deterministic fixture');
+ for(const mutate of [
+  m=>{delete m.fixtures;},m=>{m.fixtures={source:'workbench',workbenchCommit:'invalid'};},
+  m=>{delete m.toolchain;},m=>{m.toolchain=[];},m=>{m.toolchain={node:'not-a-version'};},
+  m=>{delete m.createdAt;},m=>{m.createdAt='not-a-date';},m=>{m.createdAt='2026-11-02';}
+ ]){
+  const e=env(),m=manifestFor('2.0.0',b);mutate(m);
+  assert.equal((await send(e,'/_archive/v/2.0.0/index.html',{method:'PUT',body:b})).status,201);
+  const content=Buffer.from(JSON.stringify(m));
+  assert.equal((await send(e,'/_archive/v/2.0.0/manifest.json',{method:'PUT',body:content,headers:{'x-manifest-sha256':sha(content)}})).status,400);
+  assert.equal((await send(e,'/docs/v/2.0.0/')).status,404);
+ }
 });
