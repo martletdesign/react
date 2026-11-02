@@ -1,0 +1,6 @@
+.react-workspace { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap:2rem; }
+.react-workspace > * { min-width:0; } .react-workspace label { display:block; font-weight:700; }
+.react-workspace input[type=search] { width:100%; max-width:100%; min-height:2.75rem; padding:.5rem; font:inherit; }
+.rw-records { padding:0; list-style:none; } .rw-records li { margin-block:1.5rem; } .rw-records li[hidden] { display:none; }
+.rw-actions { display:flex; flex-wrap:wrap; gap:.75rem; margin-block:1rem; }
+.rw-messages { padding-inline-start:1.5rem; } .rw-messages p { overflow-wrap:anywhere; white-space:pre-wrap; }

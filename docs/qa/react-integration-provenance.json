@@ -1,0 +1,119 @@
+{
+  "repository": "martletdesign/react",
+  "develop_base": "3c77b664ea80d0a58599dc5d7391b3d013c9570e",
+  "reviewed_tip": "13683d5176650ad2f4a63fef20ea47245cfb07d6",
+  "reviewed_tip_tree": "dc4c5fc9b114c186960b76f215b04094de0644fd",
+  "import_commit": "96b95cd6ef703d42ca34839a337509509ddb60f4",
+  "import_tree": "dc4c5fc9b114c186960b76f215b04094de0644fd",
+  "exact_tree_match_at_import": true,
+  "original_prs": [
+    {
+      "number": 1,
+      "head": "7acbcdc17a99b70734aace9028ef00a2cef9b7cf",
+      "branch": "feature/independent-react-source",
+      "base": "develop",
+      "url": "https://github.com/martletdesign/react/pull/1",
+      "retained_as_ancestor": true
+    },
+    {
+      "number": 2,
+      "head": "f7e2cf172ede7721dd133e7a71f0cc83e9c0a497",
+      "branch": "feature/react-tag-release",
+      "base": "feature/independent-react-source",
+      "url": "https://github.com/martletdesign/react/pull/2",
+      "retained_as_ancestor": true
+    },
+    {
+      "number": 3,
+      "head": "579470889695727b19505a2ef95350f1084024e6",
+      "branch": "feature/independent-reference-gallery",
+      "base": "feature/independent-react-source",
+      "url": "https://github.com/martletdesign/react/pull/3",
+      "retained_as_ancestor": true
+    },
+    {
+      "number": 4,
+      "head": "16cf4285a915309eacd5139f04096d674d3c3f1a",
+      "branch": "feature/combined-react-candidate",
+      "base": "feature/independent-react-source",
+      "url": "https://github.com/martletdesign/react/pull/4",
+      "retained_as_ancestor": true
+    },
+    {
+      "number": 5,
+      "head": "51eb10c15129407de393b46c7549bd21623165ae",
+      "branch": "feature/local-docs-archives",
+      "base": "feature/combined-react-candidate",
+      "url": "https://github.com/martletdesign/react/pull/5",
+      "retained_as_ancestor": true
+    },
+    {
+      "number": 6,
+      "head": "7ffe7b32ce2f250c8cae17bb4e85960d1a079f7c",
+      "branch": "feature/react-r2-archive",
+      "base": "feature/local-docs-archives",
+      "url": "https://github.com/martletdesign/react/pull/6",
+      "retained_as_ancestor": true
+    },
+    {
+      "number": 7,
+      "head": "dde837aef0484b5a7a34feb5f78d483b637897ef",
+      "branch": "feature/nightjar-iv-live-source-verification",
+      "base": "feature/react-r2-archive",
+      "url": "https://github.com/martletdesign/react/pull/7",
+      "retained_as_ancestor": true
+    },
+    {
+      "number": 8,
+      "head": "13683d5176650ad2f4a63fef20ea47245cfb07d6",
+      "branch": "feature/gallery-runner-bounds",
+      "base": "feature/nightjar-iv-live-source-verification",
+      "url": "https://github.com/martletdesign/react/pull/8",
+      "retained_as_ancestor": true
+    }
+  ],
+  "source_attribution_document": "PROVENANCE.md",
+  "source_attribution_document_blob": "b89f10d704129a0c65dbbe66bb34ff7826c3eb09",
+  "reviewed_source_paths_changed": [],
+  "ci_hardening_changes": [
+    ".github/workflows/docs-archive.yml",
+    ".github/workflows/r2-archive.yml",
+    ".github/workflows/release-rehearsal.yml",
+    ".github/workflows/tag-release.yml",
+    ".github/workflows/verify.yml",
+    "tests/browser-check.mjs",
+    "scripts/docs-versions/browser-check.mjs"
+  ],
+  "assertion_preservation": [
+    {
+      "family": "martlet",
+      "file": "tests/browser-check.mjs",
+      "assertionCalls": 9,
+      "exactAssertionArgumentsAndOrderPreserved": true
+    },
+    {
+      "family": "martlet",
+      "file": "scripts/docs-versions/browser-check.mjs",
+      "assertionCalls": 15,
+      "exactAssertionArgumentsAndOrderPreserved": true
+    },
+    {
+      "family": "martlet",
+      "file": "scripts/test-gallery-browser.mjs",
+      "assertionCalls": 5,
+      "exactAssertionArgumentsAndOrderPreserved": true
+    }
+  ],
+  "gallery_remediation_unchanged": true,
+  "all_publication_jobs_disabled": true,
+  "package_private": true,
+  "concurrency_upper_bound_per_latest_pr": {
+    "gallery": 2,
+    "standalone": 3,
+    "docs_archive": 3,
+    "release_rehearsal": 1,
+    "r2_gateway": 1,
+    "total": 10,
+    "scope": "per PR, not a global organization quota"
+  }
+}

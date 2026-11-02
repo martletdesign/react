@@ -1,0 +1,5 @@
+.rd-nav { align-self:start; min-width:0; padding:1rem; border-top:3px solid var(--rd-accent); color:var(--rd-text); background:var(--rd-bg); }
+.rd-nav--aligned { border:1px solid var(--rd-line); background:var(--rd-panel); }
+.rd-nav ul { list-style:none; margin:1rem 0; padding:0; } .rd-nav li { margin-block:.5rem; } .rd-nav a { display:block; padding:.5rem; color:var(--rd-link); } .rd-nav a[aria-current=page] { border-inline-start:3px solid currentColor; font-weight:700; background:var(--rd-panel); } .rd-nav :focus-visible { outline:3px solid var(--rd-accent); outline-offset:3px; } .rd-nav .rd-nav-toggle { display:none; }
+@media(max-width:64rem) { .rd-nav[data-enhanced=true] .rd-nav-toggle { display:inline-flex; } .rd-nav[data-enhanced=true][data-open=false] nav { display:none; } }
+@media print { .rd-nav { display:none; } }

@@ -1,0 +1,12 @@
+# PROPOSAL ONLY: replace placeholders only after infrastructure authorization.
+name = "REPLACE_WITH_ARCHIVE_WORKER_NAME"
+main = "worker.mjs"
+compatibility_date = "2026-08-06"
+workers_dev = false
+
+[vars]
+FAMILY = "REPLACE_WITH_martlet_OR_krigsvold"
+
+[[r2_buckets]]
+binding = "ARCHIVES"
+bucket_name = "REPLACE_WITH_DEDICATED_PRIVATE_BUCKET"
