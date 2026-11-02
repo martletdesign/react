@@ -34,3 +34,7 @@ DESIGN_BROWSER=firefox NIGHTJAR_BASE=/ node scripts/test-gallery-browser.mjs
 ```
 
 Repeat gallery build/check/browser commands with `NIGHTJAR_BASE=/preview/` for subpath coverage. Keep the built base and test base equal. No publishing, release or deployment operation is involved.
+
+## Supersession checks
+
+When reviewing a new commit, inspect the workflow run for that exact head. The previous run on the same PR must conclude `cancelled`, and there must be no feature-push gallery run for the new head. The replacement must pass Firefox smoke before any complete-matrix job starts. A cancelled obsolete run is not test-success evidence; only completed successful checks on the latest head establish a passing result.
