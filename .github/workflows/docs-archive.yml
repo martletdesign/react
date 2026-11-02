@@ -1,0 +1,64 @@
+name: React documentation archive rehearsal
+on:
+  pull_request:
+  push:
+    branches: ['feature/**']
+permissions:
+  contents: read
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        prefix: ['', '/preview']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Build a local snapshot
+        env:
+          DOCS_DEPLOY_PREFIX: ${{ matrix.prefix }}
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/archives"
+          printf '{"schemaVersion":1,"family":"martlet","framework":"react","latestStable":null,"versions":[]}\n' > "$RUNNER_TEMP/baseline.json"
+          export DOCS_ARCHIVE_ROOT="$RUNNER_TEMP/archives" DOCS_BASELINE_PATH="$RUNNER_TEMP/baseline.json"
+          export DOCS_BASELINE_SHA256="$(sha256sum "$DOCS_BASELINE_PATH" | cut -d' ' -f1)"
+          export RELEASE_TAG="v$(node -p "require('./package.json').version")"
+          node scripts/docs-versions/build-release.mjs
+      - name: Rehearse archive through the in-memory R2 gateway
+        env:
+          DOCS_FAMILY: martlet
+          DOCS_DEPLOY_PREFIX: ${{ matrix.prefix }}
+        run: |
+          export DOCS_ARCHIVE_ROOT="$RUNNER_TEMP/archives"
+          export DOCS_VERSION="$(node -p "require('./package.json').version")"
+          node scripts/docs-versions/rehearse-r2.mjs
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: node scripts/docs-versions/browser-check.mjs "$RUNNER_TEMP/archives" "$DOCS_DEPLOY_PREFIX" martlet
+        env:
+          DESIGN_BROWSER: ${{ matrix.browser }}
+          DOCS_DEPLOY_PREFIX: ${{ matrix.prefix }}
+  history:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        prefix: ['', '/preview']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - run: python3 scripts/docs-versions/rehearse-history.py
+        env:
+          DOCS_DEPLOY_PREFIX: ${{ matrix.prefix }}

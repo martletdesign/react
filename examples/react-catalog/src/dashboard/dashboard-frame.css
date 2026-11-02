@@ -1,0 +1,6 @@
+.rd-workspace {display:grid;grid-template-columns:14rem minmax(0,1fr);gap:1.5rem;max-width:94rem;margin:2rem auto;padding:0 1rem}
+.rd-content {min-width:0}.rd-content > a {display:inline-block;margin-block:.5rem}
+@media(max-width:64rem) {.rd-workspace {grid-template-columns:minmax(0,1fr)}}
+@media print {.rd-workspace{display:block;margin:0;padding:0}.rd-content > a {display:none}}
+/* The host AppShell already supplies a page gutter; avoid stacking two more on phones. */
+@media(max-width:42rem) {.rd-workspace {padding-inline:0}.rd-content .react-administration {padding-inline:0}}

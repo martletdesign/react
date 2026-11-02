@@ -1,0 +1,63 @@
+name: Independent React gallery
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+permissions:
+  contents: read
+# Feature branches are tested through PRs, not a second push-triggered matrix.
+# A new commit cancels the whole obsolete PR run, including its matrix children.
+concurrency:
+  group: react-gallery-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  firefox-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DESIGN_BROWSER: firefox
+      NIGHTJAR_BASE: /
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build && npm run build:gallery
+      - run: node scripts/check-gallery.mjs
+      - run: npx playwright install --with-deps ${{ env.DESIGN_BROWSER }}
+        timeout-minutes: 5
+      - run: node scripts/test-gallery-browser.mjs
+        timeout-minutes: 4
+      - run: node --test tests/gallery-browser-runtime.test.mjs
+  gallery:
+    needs: firefox-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        browser: [chromium, firefox, webkit]
+        base: ['/', '/preview/']
+    env:
+      DESIGN_BROWSER: ${{ matrix.browser }}
+      NIGHTJAR_BASE: ${{ matrix.base }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build && npm run build:gallery
+      - run: node scripts/check-gallery.mjs
+      - run: npx playwright install --with-deps ${{ env.DESIGN_BROWSER }}
+        timeout-minutes: 5
+      - run: node scripts/test-gallery-browser.mjs
+        timeout-minutes: 4

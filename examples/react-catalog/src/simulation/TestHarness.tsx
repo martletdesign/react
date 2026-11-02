@@ -1,0 +1,3 @@
+import {AppShell,family} from 'catalog-family';
+import {Sensors,Scene} from './Simulations';
+export function SimulationHarness(){return <div className={family} {...{[`data-${family}`]:'light'}}><AppShell brand="Northlight" navigationPlacement="none"><h1>Simulation examples</h1><section aria-labelledby="station-one"><h2 id="station-one">Station one</h2><Sensors/></section><section aria-labelledby="station-two"><h2 id="station-two">Station two</h2><Sensors/></section><section aria-labelledby="scene-one"><h2 id="scene-one">Scene one</h2><Scene/></section><section aria-labelledby="scene-two"><h2 id="scene-two">Scene two</h2><Scene/></section></AppShell></div>}

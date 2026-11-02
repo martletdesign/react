@@ -1,0 +1,70 @@
+/* Source-informed example shell: the source family mark and regional header/footer grammar remain distinct from the fictional host. */
+body { margin:0; }
+.source-shell { min-height:100vh; background:var(--ss-bg); color:var(--ss-text); }
+.source-shell--dashboard { font:1rem/1.65 var(--ss-font-sans); }
+.ss-skip { position:fixed; inset-block-start:-6rem; inset-inline-start:1rem; z-index:100; padding:.75rem; background:#fff; color:#061325; }
+.ss-skip:focus { inset-block-start:1rem; }
+.ss-header { position:relative; z-index:2; background:#061325; color:#fff; font:1rem/1.5 var(--ss-font-sans); }
+.ss-header-inner { max-width:80rem; padding:1rem 1.5rem; margin:auto; display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.source-shell--aligned .ss-header-inner { border:1px solid #ffffff33; border-radius:.4rem; }
+.ss-brand { display:flex; align-items:center; gap:.65rem; font-weight:700; font-family:var(--ss-font-display,var(--ss-font-serif)); text-decoration:none; }
+.ss-brand img { inline-size:40px; block-size:40px; object-fit:contain; }
+.source-shell .ss-header a,.source-shell .ss-footer a { color:inherit; }
+.ss-header nav { display:flex; gap:1.5rem; align-items:center; }
+.ss-header ul,.ss-footer ul { list-style:none; padding:0; margin:0; }
+.ss-header ul { display:flex; gap:1.5rem; align-items:center; }
+.ss-header a[aria-current=page] { text-decoration:underline; text-underline-offset:.35em; }
+.ss-menu,.ss-appearance { color:inherit; background:transparent; border:1px solid #a9b5c0; padding:.5rem .75rem; min-height:2.75rem; font:inherit; cursor:pointer; }
+.ss-menu { display:none; }
+.ss-header :focus-visible,.ss-footer :focus-visible { outline:3px solid currentColor; outline-offset:3px; }
+.ss-breadcrumb { max-width:80rem; margin:1.5rem auto 0; padding:0 1.5rem; font:.9rem/1.5 var(--ss-font-sans); }
+.source-shell > main { min-width:0; max-width:80rem; margin:0 auto; padding:1.5rem; }
+.source-shell--dashboard > main { max-width:96rem; }
+.source-shell--reading > main > article > header { background:#061325; color:#fff; padding:3rem 2rem; }
+.source-shell.source-shell--reading[data-mode] > main > article > header :is(h1,p,div) { color:inherit; }
+.source-shell--reading > main > article > header h1 { font-size:clamp(2.5rem,5vw,4.5rem); line-height:1.08; margin:.5rem 0 1rem; overflow-wrap:anywhere; }
+.ss-footer { background:#061325; color:#fff; padding:4rem 1.5rem; font:1rem/1.6 var(--ss-font-sans); }
+.ss-footer-inner { max-width:80rem; margin:auto; display:grid; grid-template-columns:minmax(12rem,2fr) repeat(2,minmax(9rem,1fr)); gap:2rem; }
+.ss-footer h2 { color:inherit; font:700 .85rem/1.5 var(--ss-font-sans); text-transform:uppercase; }
+.ss-footer li { margin-block:.6rem; }
+.source-shell[data-mode=dark].source-shell--reading > main > article > header { background:#f7f4eb; color:#061325; }
+.source-shell[data-mode=dark] .ss-header { background:#f7f4eb; color:#061325; }
+.source-shell[data-mode=dark] .ss-header-inner { border-color:#06132555; }
+/* Landing pages use a wide collection canvas while keeping prose readable. */
+@media(min-width:48.001rem) {
+ .source-shell--editorial article[data-composition=landing] > div[data-contents] { grid-template-columns:minmax(0,1fr); }
+ .source-shell--editorial article[data-composition=landing] > div[data-contents] > div { max-inline-size:none; }
+ .source-shell--editorial article[data-composition=landing] [data-example] .recipe-prose { max-width:68ch; }
+ .source-shell--editorial article[data-composition=landing] [data-example] > section:first-of-type .recipe-prose { max-width:56ch; font-size:1.2rem; }
+}
+/* Krigsvold source regions align labels with working content on wider screens. */
+@media(min-width:48.001rem) {
+ .source-shell--aligned article:is([data-composition=landing],[data-composition=dossier],[data-composition=detail],[data-composition=collection]) > div[data-contents] { grid-template-columns:minmax(0,1fr); }
+ .source-shell--aligned article:is([data-composition=landing],[data-composition=dossier],[data-composition=detail],[data-composition=collection]) > div[data-contents] > div { max-inline-size:none; }
+ .source-shell--aligned article:is([data-composition=landing],[data-composition=dossier],[data-composition=detail],[data-composition=collection]) [data-example] > section { display:grid; grid-template-columns:minmax(10rem,1fr) minmax(0,3fr); gap:0 clamp(2rem,4vw,4rem); border-top:1px solid var(--ss-line); padding-top:2rem; }
+ .source-shell--aligned article:is([data-composition=landing],[data-composition=dossier],[data-composition=detail],[data-composition=collection]) [data-example] > section > h2 { grid-column:1; margin-top:0; }
+ .source-shell--aligned article:is([data-composition=landing],[data-composition=dossier],[data-composition=detail],[data-composition=collection]) [data-example] > section > :not(h2) { grid-column:2; }
+ .source-shell--aligned article[data-composition=landing] [data-example] > section:first-of-type { border-top:0; padding-top:0; }
+}
+@media(max-width:68rem) { .ss-header-inner { flex-wrap:wrap; } .source-shell[data-enhanced=true] .ss-menu { display:block; } .ss-header nav { width:100%; display:block; } .source-shell[data-enhanced=true][data-open=false] .ss-header nav { display:none; } .ss-header ul { display:block; } .ss-header li { margin:.75rem 0; } .ss-footer-inner { grid-template-columns:1fr 1fr; } }
+@media(max-width:42rem) { .source-shell > main { padding:1rem; } .source-shell--reading > main > article > header { padding:2rem 1rem; } }
+@media(max-width:30rem) { .ss-footer-inner { grid-template-columns:1fr; } }
+@media print { .source-shell main details::details-content { content-visibility:visible!important; } body, .source-shell main { background:#fff!important; } .source-shell main, .source-shell main * { color:#000!important; text-shadow:none!important; } .source-shell main * { background-color:transparent!important; background-image:none!important; } .source-shell main svg text { fill:#000!important; } .source-shell main :is([class*="-table-scroll"],.ra-table,.adm-table,.ro-table) { overflow:visible!important; } .source-shell #people-table :is(th,td):first-child, .source-shell #people-table :is(th,td):last-child { display:none; } .source-shell main table { table-layout:fixed; width:100%; max-width:100%; } .source-shell main :is(th,td) { min-width:0!important; overflow-wrap:anywhere; word-break:break-word; font-size:9pt; } .source-shell main pre { white-space:pre-wrap!important; overflow-wrap:anywhere; word-break:break-word; overflow:visible!important; } .ss-skip,.ss-header,.ss-footer,.ss-breadcrumb { display:none!important; } .source-shell > main { max-width:none; padding:0; } .source-shell--reading > main > article > header { background:transparent!important; color:#000!important; padding:0; } }
+/* Source example typography: Martlet keeps editorial Cambo; Krigsvold uses
+   slab display with sans-serif section labels and cards. */
+.source-shell--reading [data-example] h2 { font-size:clamp(1.5rem,2.4vw,2rem); line-height:1.25; }
+.source-shell--reading [data-example] h3 { font-size:1.2rem; line-height:1.25; }
+.source-shell--editorial [data-example] :is(h2,h3) { font-family:var(--ss-font-serif); font-weight:400; }
+.source-shell--aligned [data-example] :is(h2,h3) { font-family:var(--ss-font-sans); }
+.source-shell--aligned [data-example] h2 { font-weight:600; }
+.source-shell--aligned [data-example] h3 { font-weight:700; }
+.source-shell--editorial > main > article > header h1 { font-size:clamp(2rem,5.5vw,5rem); line-height:1.08; }
+.source-shell--aligned > main > article > header h1 { font-size:clamp(2.8rem,6vw,5.5rem); line-height:1; letter-spacing:-.045em; font-weight:600; }
+.source-shell--aligned > main > article > header > p { font-family:var(--ss-font-sans); }
+@media(max-width:575.98px) { .source-shell--aligned > main > article > header h1 { font-size:clamp(2rem,9vw,2.8rem); overflow-wrap:anywhere; } }
+/* Grid cards share a row; prose-list spacing should not offset later columns. */
+.source-shell--reading .recipe-cards > li + li { margin-block-start:0; }
+
+/* Source example cards have their own rule; prose heading ornaments do not apply here. */
+.source-shell--reading .recipe-cards > :is(li,article) { border-block-start:1px solid var(--ss-line); padding-block:1.5rem; }
+.source-shell--editorial [data-example] h2::after { content:none; }

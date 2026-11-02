@@ -1,0 +1,16 @@
+.react-administration { max-width:78rem; margin:2rem auto 4rem; padding:0 1.5rem; color:var(--adm-text); }
+.react-administration.martlet { --adm-text:var(--martlet-text); --adm-muted:var(--martlet-muted); --adm-line:var(--martlet-line); --adm-panel:var(--martlet-panel); --adm-accent:var(--martlet-accent); --adm-bg:var(--martlet-bg); }
+.react-administration.krigsvold { --adm-text:var(--krigsvold-text); --adm-muted:var(--krigsvold-muted); --adm-line:var(--krigsvold-line); --adm-panel:var(--krigsvold-panel); --adm-accent:var(--krigsvold-accent); --adm-bg:var(--krigsvold-bg); }
+.react-administration * { box-sizing:border-box; } .react-administration [hidden] { display:none!important; }
+.adm-eyebrow { font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; } .react-administration h1 { font-size:clamp(2rem,3.4vw,3rem); }
+.adm-notice { border-inline-start:3px solid var(--adm-accent); background:var(--adm-panel); padding:1rem; } .adm-toolbar,.adm-panel { border:1px solid var(--adm-line); padding:1.25rem; margin-block:1.5rem; }
+.martlet .adm-panel { border:0; border-top:1px solid var(--adm-line); padding-inline:0; }
+.react-administration fieldset { border:0; padding:0; min-width:0; } .react-administration legend { font-weight:700; }
+.adm-controls,.adm-editor { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr)); gap:1rem; }
+.adm-editor { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.adm-controls label,.adm-editor label { display:grid; gap:.5rem; font-weight:700; } .adm-controls :is(input,select),.adm-editor :is(input,select) { max-width:100%; width:100%; min-height:2.75rem; font:inherit; padding:.5rem; color:var(--adm-text); background:var(--adm-bg); border:1px solid var(--adm-muted); }
+.adm-actions { display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; margin-block:1rem; }
+.adm-table { max-width:100%; overflow:auto; border:1px solid var(--adm-line); } .adm-table table { border-collapse:collapse; width:100%; } .adm-table :is(th,td) { text-align:start; padding:.8rem; min-width:7rem; border-bottom:1px solid var(--adm-line); } .adm-table caption { text-align:start; padding:.8rem; } .adm-table[data-density=compact] :is(th,td) { padding:.35rem .45rem; }
+.adm-sort { font:inherit; font-weight:700; color:inherit; background:transparent; border:0; text-decoration:underline; cursor:pointer; min-height:2.75rem; }
+@media(max-width:42rem) { .adm-editor { grid-template-columns:1fr; } }
+@media print { .adm-toolbar,.adm-actions { display:none; } .react-administration { max-width:none; margin:0; padding:0; } }
