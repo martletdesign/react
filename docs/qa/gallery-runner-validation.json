@@ -1,0 +1,92 @@
+{
+  "diagnosis": "Firefox page.evaluate(() => document.fonts.ready) hangs with JavaScript disabled even with document.fonts.status == loaded. Browser-side promise does not return; synchronous font-status reads work.",
+  "limited_first": {
+    "family": "martlet",
+    "engine": "firefox",
+    "base": "/",
+    "routes_passed": 8,
+    "axe_passed": true
+  },
+  "limited_completed_at": "2026-11-02T02:26:19.664771+00:00",
+  "full_completed_at": "2026-11-02T02:27:36.527646+00:00",
+  "full_matrix": [
+    {
+      "family": "martlet",
+      "engine": "firefox",
+      "base": "/",
+      "exit_code": 0,
+      "routes_passed": 8,
+      "axe_passed": 1,
+      "passed": true,
+      "duration_seconds": 8.46,
+      "log": "martlet-firefox-root-full.log"
+    },
+    {
+      "family": "martlet",
+      "engine": "chromium",
+      "base": "/",
+      "exit_code": 0,
+      "routes_passed": 8,
+      "axe_passed": 1,
+      "passed": true,
+      "duration_seconds": 6.19,
+      "log": "martlet-chromium-root-full.log"
+    },
+    {
+      "family": "martlet",
+      "engine": "webkit",
+      "base": "/",
+      "exit_code": 0,
+      "routes_passed": 8,
+      "axe_passed": 1,
+      "passed": true,
+      "duration_seconds": 4.39,
+      "log": "martlet-webkit-root-full.log"
+    },
+    {
+      "family": "martlet",
+      "engine": "firefox",
+      "base": "/preview/",
+      "exit_code": 0,
+      "routes_passed": 8,
+      "axe_passed": 1,
+      "passed": true,
+      "duration_seconds": 8.57,
+      "log": "martlet-firefox-preview-full.log"
+    },
+    {
+      "family": "martlet",
+      "engine": "chromium",
+      "base": "/preview/",
+      "exit_code": 0,
+      "routes_passed": 8,
+      "axe_passed": 1,
+      "passed": true,
+      "duration_seconds": 4.55,
+      "log": "martlet-chromium-preview-full.log"
+    },
+    {
+      "family": "martlet",
+      "engine": "webkit",
+      "base": "/preview/",
+      "exit_code": 0,
+      "routes_passed": 8,
+      "axe_passed": 1,
+      "passed": true,
+      "duration_seconds": 6.32,
+      "log": "martlet-webkit-preview-full.log"
+    }
+  ],
+  "unit_tests": {
+    "passed": 37,
+    "failed": 0
+  },
+  "workflow_validation": "actionlint passed; six original browser/base cells retained behind Firefox smoke gate",
+  "tested_files_sha256": {
+    "scripts/test-gallery-browser.mjs": "89548c1a77a6e56133f651630668b7d2c9fe93e3f32883af70a33ffbaa3535d5",
+    "scripts/gallery-browser-runtime.mjs": "b8eb1518be49f6af20c7b159f9a47b62da05001ad21defddeeba1abc24fa18db",
+    "tests/gallery-browser-runtime.test.mjs": "675f484dd318c5fbeccf0905348bc64249abda6883a718fc61ced3fe8f2579f5",
+    ".github/workflows/gallery-verify.yml": "0ee740f80c5f29f15bff43d316c2329ac3c5174e841a5019bcb25bfaada50072"
+  },
+  "limitations": "Local browsers/builds. Hosted exact-head results are reported separately in the draft PR."
+}
