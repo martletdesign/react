@@ -10,11 +10,13 @@ const family=JSON.parse(await readFile(new URL('../docs-release-lock.json',impor
 const value={schemaVersion:1,family,framework:'react',version:'2.0.0',source:{repository:repo,tag,commit},manifestSha256:'1'.repeat(64),catalogSha256:'2'.repeat(64),promotionSha256:'3'.repeat(64),previous:null};
 const identity={family,repository:repo,tag,expectedCommit:commit};
 async function fixture(testCase){const dir=await mkdtemp(join(tmpdir(),'nightjar-gh-checkpoint-'));try{const path=join(dir,'documentation-checkpoint.json'),bytes=checkpointBytes(value,identity);await writeFile(path,bytes);await testCase({path,bytes,sha:sha256(bytes),dir});}finally{await rm(dir,{recursive:true,force:true});}}
-function fake({bytes,sha,tagName=tag,gitObject=object,gitCommit=commit,main=commit,remote=object,immutable=true,failAt,origin=`https://github.com/${repo}.git`,assetDigest=sha}){
+function fake({bytes,sha,tagName=tag,gitObject=object,gitCommit=commit,main=commit,mainTip=commit,remoteMain=mainTip,remote=object,immutable=true,failAt,origin=`https://github.com/${repo}.git`,assetDigest=sha}){
  const calls=[];const run=(program,args)=>{calls.push([program,...args]);if(failAt===`${program} ${args.slice(0,2).join(' ')}`)throw Error('simulated failure');
   if(program==='gh'&&args[0]==='api')return JSON.stringify({immutable,draft:false,tag_name:tagName,assets:[{name:'documentation-checkpoint.json',digest:`sha256:${assetDigest}`,size:bytes.length}]});
   if(program==='gh'&&args[0]==='release'&&['verify','verify-asset'].includes(args[1]))return '';
   if(program==='git'&&args[0]==='remote')return origin;
+  if(program==='git'&&args[0]==='rev-parse'&&args[1]==='refs/remotes/origin/main')return mainTip;
+  if(program==='git'&&args[0]==='ls-remote'&&args.at(-1)==='refs/heads/main')return `${remoteMain}\trefs/heads/main\n`;
   if(program==='git'&&args[0]==='rev-parse')return args[1].endsWith('^{commit}')?gitCommit:gitObject;
   if(program==='git'&&args[0]==='ls-remote')return `${remote}\trefs/tags/${tagName}\n`;
   if(program==='git'&&args[0]==='rev-list')return `${main}\n`;
@@ -25,7 +27,7 @@ test('requires immutable signed release, exact asset, protected source identity 
  assert.deepEqual(f.calls.filter(x=>x[0]==='gh').map(x=>x.slice(1,3)),[['api',`repos/${repo}/releases/tags/${tag}`],['release','verify'],['release','verify-asset']]);
  await assert.rejects(verifyCheckpoint({...args,expectedSha256:'f'.repeat(64)}),/digest mismatch/);
  await assert.rejects(verifyCheckpoint({...args,expectedSha256:undefined}),/pins required/);
- for(const changes of [{immutable:false},{assetDigest:'f'.repeat(64)},{gitCommit:'c'.repeat(40)},{remote:'d'.repeat(40)},{main:'e'.repeat(40)},{origin:'https://other.invalid/repo.git'},{failAt:'gh release verify'},{failAt:'gh release verify-asset'}]){
+ for(const changes of [{remoteMain:'f'.repeat(40)},{remoteMain:''},{mainTip:'invalid'},{immutable:false},{assetDigest:'f'.repeat(64)},{gitCommit:'c'.repeat(40)},{remote:'d'.repeat(40)},{main:'e'.repeat(40)},{origin:'https://other.invalid/repo.git'},{failAt:'gh release verify'},{failAt:'gh release verify-asset'}]){
   await assert.rejects(verifyCheckpoint({...args,run:fake({bytes,sha,...changes}).run}));
  }
  // A recovery retry is read-only and verifies the same immutable bytes again.
@@ -52,7 +54,7 @@ test('CLI drives read-only verifier executables and fails closed on a signature 
  const {chmod}=await import('node:fs/promises');
  const gh=join(dir,'gh'),git=join(dir,'git');
  const mockGh=`#!/usr/bin/env node\nconst a=process.argv.slice(2);if(a[0]==='api')console.log(JSON.stringify({immutable:true,draft:false,tag_name:process.env.TEST_TAG,assets:[{name:'documentation-checkpoint.json',size:Number(process.env.TEST_SIZE),digest:'sha256:'+process.env.TEST_SHA}]}));else if(a[0]==='release'&&(a[1]==='verify'||a[1]==='verify-asset')){if(process.env.TEST_REJECT==='1')process.exit(1);}else process.exit(2);\n`;
- const mockGit=`#!/usr/bin/env node\nconst a=process.argv.slice(2);if(a[0]==='remote')console.log('https://github.com/'+process.env.TEST_REPO+'.git');else if(a[0]==='rev-parse')console.log(a[1].endsWith('^{commit}')?process.env.TEST_COMMIT:process.env.TEST_OBJECT);else if(a[0]==='ls-remote')console.log(process.env.TEST_OBJECT+'\\trefs/tags/'+process.env.TEST_TAG);else if(a[0]==='rev-list')console.log(process.env.TEST_COMMIT);else process.exit(2);\n`;
+ const mockGit=`#!/usr/bin/env node\nconst a=process.argv.slice(2);if(a[0]==='remote')console.log('https://github.com/'+process.env.TEST_REPO+'.git');else if(a[0]==='rev-parse'&&a[1]==='refs/remotes/origin/main')console.log(process.env.TEST_COMMIT);else if(a[0]==='ls-remote'&&a.at(-1)==='refs/heads/main')console.log(process.env.TEST_COMMIT+'\\trefs/heads/main');else if(a[0]==='rev-parse')console.log(a[1].endsWith('^{commit}')?process.env.TEST_COMMIT:process.env.TEST_OBJECT);else if(a[0]==='ls-remote')console.log(process.env.TEST_OBJECT+'\\trefs/tags/'+process.env.TEST_TAG);else if(a[0]==='rev-list')console.log(process.env.TEST_COMMIT);else process.exit(2);\n`;
  await writeFile(gh,mockGh);await writeFile(git,mockGit);await chmod(gh,0o700);await chmod(git,0o700);
  const env={...process.env,PATH:`${dir}:${process.env.PATH}`,GITHUB_REPOSITORY:repo,RELEASE_TAG:tag,TEST_TAG:tag,TEST_SIZE:String(bytes.length),TEST_SHA:sha,TEST_REPO:repo,TEST_COMMIT:commit,TEST_OBJECT:object};
  const args=['scripts/docs-versions/checkpoint-cli.mjs','verify',path,sha,commit];
@@ -70,6 +72,8 @@ test('two signed checkpoints retain their pinned lineage and reject a substitute
    if(program==='gh'&&args[0]==='api'){activeTag=args[1].split('/').at(-1);const b=activeTag===tag?oldBytes:newBytes;return JSON.stringify({immutable:true,draft:false,tag_name:activeTag,assets:[{name:'documentation-checkpoint.json',digest:`sha256:${sha256(b)}`,size:b.length}]});}
    if(program==='gh')return '';
    if(args[0]==='remote')return `https://github.com/${repo}.git`;
+   if(args[0]==='rev-parse'&&args[1]==='refs/remotes/origin/main')return newCommit;
+   if(args[0]==='ls-remote'&&args.at(-1)==='refs/heads/main')return `${newCommit}\trefs/heads/main\n`;
    if(args[0]==='rev-parse')return args[1].endsWith('^{commit}')?(activeTag===tag?commit:newCommit):object;
    if(args[0]==='ls-remote')return `${object}\trefs/tags/${activeTag}\n`;
    if(args[0]==='rev-list')return `${newCommit}\n${commit}\n`;

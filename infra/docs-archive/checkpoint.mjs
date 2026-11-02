@@ -42,7 +42,12 @@ export async function verifyCheckpoint({family,repository,tag,expectedCommit,exp
   const ref=`refs/tags/${tag}`,localObject=run('git',['rev-parse',ref],{cwd}).trim(),localCommit=run('git',['rev-parse',`${ref}^{commit}`],{cwd}).trim();
   const remote=run('git',['ls-remote','--refs','origin',ref],{cwd}).trim().split(/\s+/);
   required(commit.test(localObject)&&localCommit===expectedCommit&&remote.length===2&&remote[0]===localObject&&remote[1]===ref,'Tag object or commit changed');
-  const main=run('git',['rev-list','--first-parent','refs/remotes/origin/main'],{cwd}).trim().split('\n');
+  // Reject stale production ancestry before trusting local tracking history.
+  const mainRef='refs/heads/main',trackingRef='refs/remotes/origin/main';
+  const trackingTip=run('git',['rev-parse',trackingRef],{cwd}).trim();
+  const remoteMain=run('git',['ls-remote','--refs','origin',mainRef],{cwd}).trim().split(/\s+/);
+  required(commit.test(trackingTip)&&remoteMain.length===2&&remoteMain[0]===trackingTip&&remoteMain[1]===mainRef,'Production tracking ref is stale or unavailable; fetch main before verification');
+  const main=run('git',['rev-list','--first-parent',trackingRef],{cwd}).trim().split('\n');
   required(main.includes(expectedCommit),'Checkpoint source is not on approved main first-parent history');
   return {checkpoint:value,sha256:expectedSha256,assetName};
 }
