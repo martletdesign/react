@@ -1,0 +1,27 @@
+name: Dispatch verified Issue 81 React stage
+on:
+  push:
+    branches: ['operations/issue-81-stage-dispatch-dd06ac3b']
+permissions:
+  contents: read
+  actions: write
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Recheck approved main and prevent duplicate staging runs
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq .object.sha)" = "322e549d15812d74257ace37207f62410d6f0911"
+          count=$(gh api "repos/$GH_REPO/actions/workflows/stage-release.yml/runs?head_sha=322e549d15812d74257ace37207f62410d6f0911&event=workflow_dispatch&per_page=20" --jq .total_count)
+          test "$count" = 0
+      - name: Dispatch the existing protected default-branch workflow
+        run: |
+          gh workflow run stage-release.yml --repo "$GH_REPO" --ref main \
+            -f source_sha=322e549d15812d74257ace37207f62410d6f0911 \
+            -f artifact_sha256=185bf53ada0b4bdb792a1ba78223068ec3eda29ba1e74a6f85415c6cdf98f6d1 \
+            -f distribution_tag=latest
