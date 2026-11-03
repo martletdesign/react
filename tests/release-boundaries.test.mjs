@@ -6,7 +6,7 @@ import {join} from 'node:path';
 import {catalogRouteId} from '../examples/react-catalog/src/route.mjs';
 import {normalizePackageModes} from '../scripts/normalize-package-modes.mjs';
 test('host root and preview hydrate only their explicit index and known catalog route shape',()=>{
- for(const base of ['/','/preview/']){assert.equal(catalogRouteId(base,base),'index');assert.equal(catalogRouteId(base+'examples/',base),'index');assert.equal(catalogRouteId(base+'examples/article/',base),'article');for(const bad of ['unknown','examples/article/extra/','examples/%61rticle/','examples/article//'])assert.equal(catalogRouteId(base+bad,base),undefined);}
+ for(const base of ['/','/preview/']){assert.equal(catalogRouteId(base,base),'index');assert.equal(catalogRouteId(base+'index.html',base),'index');assert.equal(catalogRouteId(base+'examples/index.html',base),'index');assert.equal(catalogRouteId(base+'examples/article/index.html',base),'article');assert.equal(catalogRouteId(base+'examples/',base),'index');assert.equal(catalogRouteId(base+'examples/article/',base),'article');for(const bad of ['unknown','examples/article/extra/','examples/%61rticle/','examples/article//'])assert.equal(catalogRouteId(base+bad,base),undefined);}
  assert.equal(catalogRouteId('/previewed/examples/article/','/preview/'),undefined);
 });
 test('isolated package normalization produces canonical modes and rejects symlink payloads',async()=>{
