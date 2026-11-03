@@ -14,7 +14,7 @@ try{
   console.log(`${path}: oversized chunked request rejected (source chunks ${produced}/${count}, cancelled=${cancelled})`);
  }
  assert.equal((await call('/_archive/v/2.0.0/oversized.bin')).status,404);
- const bytes=Buffer.from('<h1>archive</h1>');const v='2.0.0';const manifest=Buffer.from(JSON.stringify({schemaVersion:1,family:'martlet',framework:'react',docsVersion:v,basePath:`/docs/v/${v}/`,implementation:{kind:'npm',name:'@martlet/react',version:v,tag:`v${v}`},source:{repository:'martletdesign/react',commit:'a'.repeat(40),tag:`v${v}`},core:{name:'@martlet/core',version:'2.2.3',integrity:`sha512-${Buffer.alloc(64,1).toString('base64')}`},indexing:'noindex',files:[{path:'index.html',size:bytes.length,sha256:sha(bytes)}]}));
+ const bytes=Buffer.from('<h1>archive</h1>');const v='2.0.0';const manifest=Buffer.from(JSON.stringify({schemaVersion:1,family:'martlet',framework:'react',docsVersion:v,basePath:`/docs/v/${v}/`,implementation:{kind:'npm',name:'@martlet/react',version:v,tag:`v${v}`},source:{repository:'martletdesign/react',commit:'a'.repeat(40),tag:`v${v}`},core:{name:'@martlet/core',version:'2.2.3',integrity:`sha512-${Buffer.alloc(64,1).toString('base64')}`},fixtures:{source:'repository'},toolchain:{node:'24.19.0'},createdAt:'2026-11-02T00:00:00.000Z',indexing:'noindex',files:[{path:'index.html',size:bytes.length,sha256:sha(bytes)}]}));
  assert.equal((await call('/_archive/v/2.0.0/index.html','PUT',bytes)).status,201);
  assert.equal((await call('/_archive/v/2.0.0/index.html','PUT',bytes)).status,409);
  assert.equal((await call('/_archive/v/2.0.0/manifest.json','PUT',manifest,{'x-manifest-sha256':sha(manifest)})).status,201);

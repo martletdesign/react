@@ -1,8 +1,8 @@
 import {hydrateRoot} from 'react-dom/client';
 import {App} from './app';
 import type {CatalogPageData} from './data-types';
-const relative=location.pathname.slice(import.meta.env.BASE_URL.replace(/\/$/, '').length);
-const id=/^\/examples\/?$/.test(relative)?'index':relative.match(/^\/examples\/([^/]+)\/?$/)?.[1];
+import {catalogRouteId} from './route.mjs';
+const id=catalogRouteId(location.pathname,import.meta.env.BASE_URL);
 const element=document.getElementById('catalog-page-data');
 if(!id||!element)throw Error('Unknown catalog path or missing page data');
 const data=JSON.parse(element.textContent||'') as CatalogPageData;

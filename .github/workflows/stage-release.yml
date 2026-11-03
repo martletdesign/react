@@ -1,0 +1,74 @@
+name: Stage reviewed React release
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact protected main commit already verified by the required CI
+        required: true
+      artifact_sha256:
+        description: Independently reviewed SHA256 of the isolated publishable archive
+        required: true
+      distribution_tag:
+        type: choice
+        options: [next, latest]
+        default: next
+permissions:
+  contents: read
+concurrency:
+  group: react-reviewed-stage-${{ github.repository }}
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: react-production-release
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      APPROVED_SHA: ${{ inputs.source_sha }}
+      EXPECTED_SHA256: ${{ inputs.artifact_sha256 }}
+      REF_PROTECTED: ${{ github.ref_protected }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - run: npm install --global npm@11.15.0 --ignore-scripts
+      - name: Verify exact protected main and unoccupied release identity
+        id: identity
+        run: node scripts/stage-release-preflight.mjs
+      - run: npm ci --ignore-scripts && npm test
+      - name: Verify ordinary static documentation at root
+        run: npm run build:gallery && node scripts/check-gallery.mjs
+        timeout-minutes: 4
+      - name: Verify ordinary static documentation at subpath
+        run: npm run build:gallery && node scripts/check-gallery.mjs
+        timeout-minutes: 4
+        env:
+          NIGHTJAR_BASE: /preview/
+      - name: Export and inspect the reviewed publishable archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir "$RUNNER_TEMP/react-src" "$RUNNER_TEMP/react-out"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/react-src"
+          node -e 'const fs=require("fs"),p=process.argv[1],v=JSON.parse(fs.readFileSync(p));if(v.private!==true)process.exit(1);v.private=false;fs.writeFileSync(p,JSON.stringify(v,null,2)+"\n")' "$RUNNER_TEMP/react-src/package.json"
+          (cd "$RUNNER_TEMP/react-src" && npm ci --ignore-scripts && npm run build && node scripts/normalize-package-modes.mjs . && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/react-out")
+          node scripts/tag-release-cli.mjs inspect "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz"
+          printf '%s  %s\n' "$EXPECTED_SHA256" "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" | sha256sum --check
+      - name: Recheck source and registry immediately before staging
+        run: node scripts/stage-release-preflight.mjs
+      - name: Stage reviewed archive for separate npm approval
+        env:
+          NPM_TAG: ${{ inputs.distribution_tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$NPM_TAG" = next || "$NPM_TAG" = latest ]]
+          npm stage publish "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" --access public --tag "$NPM_TAG" --provenance
