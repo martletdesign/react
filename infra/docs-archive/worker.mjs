@@ -26,6 +26,11 @@ function parseManifest(bytes, env, version) {
       m.implementation?.kind !== 'npm' || m.implementation.name !== `@${env.FAMILY}/react` || m.implementation.version !== version || m.implementation.tag !== `v${version}` ||
       m.source?.repository !== `${env.FAMILY}design/react` || m.source.tag !== `v${version}` || !/^[a-f0-9]{40}$/.test(m.source.commit || '') ||
       m.core?.name !== `@${env.FAMILY}/core` || !validVersion(m.core.version || '') || !/^sha512-[A-Za-z0-9+/]{86}==$/.test(m.core.integrity || '') ||
+      !(m.fixtures?.source === 'repository' && m.fixtures.workbenchCommit === undefined ||
+        (m.fixtures?.source === undefined || m.fixtures.source === 'workbench') && /^[a-f0-9]{40}$/.test(m.fixtures?.workbenchCommit || '')) ||
+      !m.toolchain || typeof m.toolchain !== 'object' || Array.isArray(m.toolchain) || typeof m.toolchain.node !== 'string' ||
+      !Object.values(m.toolchain).every(x => typeof x === 'string' && /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/.test(x)) ||
+      typeof m.createdAt !== 'string' || Number.isNaN(Date.parse(m.createdAt)) || new Date(m.createdAt).toISOString() !== m.createdAt ||
       m.indexing !== 'noindex' || !Array.isArray(m.files) || m.files.length === 0 || m.files.length > 10000) throw Error('invalid manifest identity');
   const seen = new Set();
   for (const f of m.files) {
