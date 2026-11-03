@@ -1,0 +1,5 @@
+.rg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr)); gap:1.5rem; }
+.react-gallery figure { margin:0; min-width:0; }
+.react-gallery img { display:block; width:100%; height:auto; }
+.rg-dialog { max-width:min(90vw,64rem); max-height:90vh; overflow:auto; }
+.rg-dialog figure { margin-block:1rem 0; }

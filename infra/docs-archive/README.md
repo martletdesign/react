@@ -1,0 +1,29 @@
+# Documentation archive gateway — nonproduction candidate
+
+This draft implements an R2-backed write-once gateway and integrity-checking reader. It is **not production-ready** and is not wired to the release workflow. `scripts/verify-docs-published.mjs` must continue to block releases. The gallery is experimental; this adapter does not establish remote immutability.
+
+The client verifies an existing local snapshot against its expected manifest SHA-256, uploads each object using authenticated PUT and uploads `manifest.json` last. R2 `If-None-Match: *` conditional creation rejects replacement. The gateway verifies all listed object bytes and lengths before creating the manifest, and exposes only listed files after commit. Public reads verify bytes again before serving. The private GET is restricted to the writer and enables a safe retry only when the existing object's bytes exactly match. An unexpected byte or failed write is a hard failure: there is no automatic deletion or overwrite.
+
+The public client independently downloads every file and validates its hash against a caller-supplied trusted manifest digest. A digest returned by the gateway alone is **not** a trust anchor. Catalog documents are stored as create-only content-addressed objects, with a conditional compare-and-swap pointer. Each advance verifies all historical archives and preserves historical identities; independently pinned digest traversal detects a rewritten chain. Publication is idempotent after interruption and supports a configured deployment subpath. A separate content-addressed promotion history and CAS pointer select the live `/docs/` redirect; promotion and withdrawal rollback are distinct from archive creation. The independently protected external checkpoint and a live Cloudflare verification are not implemented. Do not activate releases or deploy this adapter until those gaps and a full review are complete.
+
+## Required production controls before any future activation
+
+- Use one dedicated private R2 bucket for each independent archive authority. Only this reviewed Worker may write to it; do not expose S3 or other Worker write/delete credentials. Separate and tightly control administrator rights. R2 conditional requests protect this gateway's writes, but R2 is not a WORM store: a privileged administrator or direct bucket credential can change or delete data. External append-only trust and monitoring must detect that.
+- Create a high-entropy `ARCHIVE_WRITE_TOKEN` as a Worker secret and release workflow secret only after authorization; never put it in source or logs. Restrict access to the secret and Worker deployment authority. This example token mechanism and rotation/revocation policy require security review; no secret is configured by this proposal.
+- Supply an independently authenticated baseline catalog, and retain every historical manifest digest outside the bucket under protected immutable release identities. Before advancing a catalog, verify previous history and all remote bytes. The client requires the independently pinned previous hash and verifies the history chain; implement authenticated, durable off-bucket checkpoint publication before activation. The conditional pointer is not a substitute for an independent checkpoint.
+- Configure a dedicated, same-origin HTTPS route and version/subpath handling, validate caching and access policies, and test real R2 consistency, administrator changes, concurrency, failed writes and recovery. No Cloudflare configuration or DNS is changed here.
+- Preserve the existing disabled tag-release workflow and its fail-closed archive verification. Full canonical content, accessible selector, historical serving and no-JavaScript navigation need separate verification.
+
+## Local verification
+
+`npm test` at the repository root covers authorization, replacement, incomplete uploads, corrupt bytes, wrong trust anchor and retry after interruption with an in-memory R2 test double. To test Cloudflare's local Workers runtime and R2 adapter, run `npm ci --prefix infra/docs-archive` and `npm test --prefix infra/docs-archive`. This is local emulation, not a live R2 or OIDC test.
+
+Cloudflare's [R2 Workers API reference](https://github.com/cloudflare/cloudflare-docs/blob/production/src/content/docs/r2/api/workers/workers-api-reference.mdx) documents conditional `put` and strongly consistent writes. Production bucket isolation and independent history remain operational prerequisites.
+
+## Promotion and withdrawal rollback rehearsal
+
+The release caller saves each successful catalog and promotion hash in an independently protected checkpoint. Invoke `advanceCatalog` and `advancePromotion` from `client.mjs` with the exact last saved hashes and verify the returned bytes before recording the new hashes. The promotion target must be the current catalog's supported `latestStable`; historical snapshots are not changed.
+
+For a withdrawal rollback, create a new catalog that preserves every old entry and digest, marks the withdrawn later releases unsupported and names the previous supported stable release as `latestStable`. Advance it using the pinned previous catalog hash. During the gap before reconciliation `/docs/` deliberately returns 503. Then create a `rollback` promotion with a reason, the new catalog hash and the pinned previous promotion hash, and call `advancePromotion`. The gateway rejects an earlier version without an explicit rollback, and records both decisions as create-only content-addressed objects. Verify `/docs/` and all historical archives before storing the new independent checkpoints. A same-byte retry is safe; a conflicting current pointer fails closed.
+
+This is a withdrawal of releases explicitly marked unsupported, not a claim that arbitrary temporary pointer rollbacks are supported. The off-bucket checkpoint must itself resist rollback or deletion; choosing and provisioning that authority remains a production blocker.
