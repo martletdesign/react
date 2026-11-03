@@ -1,4 +1,4 @@
-import {validateIdentity} from './tag-release-guard.mjs';
+import {validateIdentity,verifyProvenance} from './tag-release-guard.mjs';
 export function validateStage({pkg,lock,pin,delivery,repository,expectedRepository,ref,protectedRef,sourceSha,eventSha,checkoutSha,remoteMainSha}) {
   const expectedName='@'+expectedRepository.split('/')[0].replace(/design$/,'')+'/react';
   validateIdentity({tag:'v'+pkg.version,pkg,source:{version:pkg.version},lock,repository,expectedRepository,expectedName});
@@ -8,4 +8,9 @@ export function validateStage({pkg,lock,pin,delivery,repository,expectedReposito
   for(const entry of Object.values(lock.packages))if(entry.resolved&&!entry.resolved.startsWith('https://registry.npmjs.org/'))throw Error('Non-registry dependency in publish source');
   if(delivery.schemaVersion!==1||delivery.mode!=='static-reference'||delivery.advancedArchive?.enabled!==false||delivery.advancedArchive.administratorImmutable!==false)throw Error('Only the verified static reference path is enabled');
   return {name:pkg.name,version:pkg.version};
+}
+
+export function verifyStagedProvenance({audit,archive,name,version,repository,commit}) {
+  if(!/^[a-f0-9]{40}$/.test(commit||''))return false;
+  return verifyProvenance({audit,archive,name,version,repository,tag:'v'+version,commit,expectedWorkflow:'.github/workflows/stage-release.yml',expectedRef:'refs/heads/main',expectedEvent:'workflow_dispatch'});
 }
