@@ -6,9 +6,13 @@ const mf=new Miniflare({modules:true,scriptPath:fileURLToPath(new URL('./worker.
 const call=(path,method='GET',body,extra={})=>mf.dispatchFetch('https://example.invalid/preview'+path,{method,body,redirect:'manual',headers:{authorization:'Bearer this-is-a-secret-token-32-bytes-minimum',...extra}});
 const sha=b=>createHash('sha256').update(b).digest('hex');
 try{
+ // Establish the local workerd transport before testing early stream rejection.
+ assert.equal((await call('/_archive/v/2.0.0/oversized.bin')).status,404);
  for(const [path,chunkSize,count] of [['/_archive/v/2.0.0/oversized.bin',1024*1024,20],['/_archive/catalog',256*1024,6],['/_archive/promotion',32*1024,4]]){
   let produced=0,cancelled=false;
-  const stream=new ReadableStream({pull(c){produced++;c.enqueue(new Uint8Array(chunkSize));if(produced===count)c.close();},cancel(){cancelled=true;}});
+  // Yield between chunks so the bridge observes HTTP 413 before upload cancellation.
+  // The oversized byte counts and all rejection/storage assertions are unchanged.
+  const stream=new ReadableStream({async pull(c){await new Promise(done=>setTimeout(done,2));if(cancelled)return;produced++;c.enqueue(new Uint8Array(chunkSize));if(produced===count)c.close();},cancel(){cancelled=true;}});
   const response=await mf.dispatchFetch(`https://example.invalid/preview${path}`,{method:'PUT',body:stream,duplex:'half',redirect:'manual',headers:{authorization:'Bearer this-is-a-secret-token-32-bytes-minimum'}});
   assert.equal(response.status,413,path);
   console.log(`${path}: oversized chunked request rejected (source chunks ${produced}/${count}, cancelled=${cancelled})`);
