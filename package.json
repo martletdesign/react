@@ -32,7 +32,8 @@
     "build": "node build.mjs",
     "test": "npm run build && node --test tests/*.test.mjs",
     "test:browser": "DESIGN_FAMILY=martlet node tests/browser-check.mjs",
-    "build:gallery": "NIGHTJAR_FAMILY=martlet node examples/react-catalog/build.mjs"
+    "build:gallery": "NIGHTJAR_FAMILY=martlet node examples/react-catalog/build.mjs",
+    "build:reference": "node scripts/build-reference-deployment.mjs"
   },
   "repository": {
     "type": "git",
