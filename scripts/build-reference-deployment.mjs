@@ -23,6 +23,7 @@ try {
   await writeFile(baseline,baselineBytes);
   run('scripts/docs-versions/build-release.mjs',{DOCS_ARCHIVE_ROOT:archive,DOCS_BASELINE_PATH:baseline,DOCS_BASELINE_SHA256:sha256(baselineBytes),DOCS_DEPLOY_PREFIX:prefix,RELEASE_TAG:'v'+pkg.version});
   const snapshot=join(archive,pkg.version),manifestBytes=await readFile(join(snapshot,'manifest.json')),manifest=JSON.parse(manifestBytes),digest=sha256(manifestBytes);
+  if(manifest.source.commit!==commit||execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()!==commit)throw Error('Source moved during reference assembly');
   await verifyArchive(snapshot,manifest,digest);
   const versionRoot=join(destination,'docs/v');await mkdir(versionRoot,{recursive:true});await cp(snapshot,join(versionRoot,pkg.version),{recursive:true,errorOnExist:true,force:false});
   const catalog={schemaVersion:1,family,framework:'react',latestStable:pkg.version,versions:[{version:pkg.version,channel:'stable',manifestSha256:digest,supported:true,topics:manifest.files.filter(x=>x.path.endsWith('.html')).map(x=>x.path)}]};validateCatalog(catalog);
@@ -31,6 +32,7 @@ try {
   await mkdir(join(destination,'docs/versions'),{recursive:true});await writeFile(join(destination,'docs/index.html'),page);await writeFile(join(destination,'docs/versions/index.html'),page);
   snapshots.push({base,version:pkg.version,manifestSha256:digest,files:manifest.files.length,sourceCommit:manifest.source.commit});
  }
+ if(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()!==commit)throw Error('Source moved during reference assembly');
  const provenance={schemaVersion:1,family,framework:'react',package:{name:pkg.name,version:pkg.version},source:{repository:family+'design/react',commit},core:pin.core,delivery,snapshots};
  await writeFile(join(output,'version.json'),JSON.stringify(provenance,null,2)+'\n');
  console.log(JSON.stringify({output,...provenance}));
