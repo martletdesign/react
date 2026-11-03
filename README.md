@@ -1,11 +1,11 @@
-# Martlet React (experimental transfer candidate)
+# Martlet React (experimental)
 
-This independent repository candidate contains the experimental `@martlet/react` component implementation. It is not yet the publication authority. Existing npm releases remain available; no registry or workbench publication settings are changed by this proposal.
+This independent repository contains the experimental `@martlet/react` component implementation. Existing npm releases remain available. Standalone staging is prepared in the reviewed `stage-release.yml` workflow and `react-production-release` environment; npm trust and publication authority must be verified during the coordinated workbench cutover.
 
 ## Development
 
-Use Node 24: `npm ci --ignore-scripts`, then `npm test`. `npm pack --ignore-scripts` creates a local candidate archive. Package source remains private until a separately approved release process creates a publishable manifest in isolation.
+Use Node 24: `npm ci --ignore-scripts`, then `npm test`. `npm pack --ignore-scripts` creates a local candidate archive. The public repository keeps `private:true` in its manifest to prevent accidental publication; the reviewed staging workflow creates a publishable manifest only in an isolated export.
 
 The exact published `@martlet/core` dependency supplies styles. Import `@martlet/react/styles.css`; load `@martlet/core/fonts.css` separately if desired. The public component API is experimental. Refer to [the historical component contracts](https://github.com/k3jph/design-workbench/blob/80a5635abe4de7a07a1983de0b3ef796b101e047/docs/components.md) for behavior and acceptance criteria.
 
-Standalone browser, documentation-site and immutable release archive coverage remain to be completed. Automated checks do not replace manual assistive-technology assessment. See PROVENANCE.md for the source baseline and ownership transition.
+The independent reference catalog contains all 50 canonical recipes, three dashboards and the scientific workspace. Browser verification covers Chromium, Firefox and WebKit at root and `/preview/`. `npm run build:gallery` builds the static site in `examples/react-catalog/dist/martlet`; use the examples index at `/examples/`. `docs-delivery.json` explicitly disables the advanced remote archive pathway until live Worker isolation and independent anti-rollback authority are verified. The ordinary static documentation build is the production delivery path; it makes no administrator-immutable archive claim. Automated checks do not replace manual assistive-technology assessment. See PROVENANCE.md for the source baseline and ownership transition.
