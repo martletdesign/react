@@ -27,8 +27,15 @@ git fetch -q origin main:refs/remotes/origin/main
 export RELEASE_TAG=v9999.0.0-nightjar.0 REF_PROTECTED=true RELEASE_ENVIRONMENT_READY=yes
 export GITHUB_REPOSITORY="${family}design/react" GITHUB_SHA=$(git rev-parse HEAD)
 export GITHUB_OUTPUT="$work/output" NODE_USE_ENV_PROXY=1
-node scripts/tag-release-cli.mjs preflight
-grep -Fxq 'channel=next' "$GITHUB_OUTPUT"
+# The synthetic source is unpublished: validate its tag and absence without
+# pretending it can complete a genuine published-source release.
+node scripts/tag-release-cli.mjs verify-tag
+node scripts/tag-release-cli.mjs confirm-absent
+node --input-type=module -e 'import assert from "node:assert/strict"; import {releaseVersion} from "./scripts/tag-release-guard.mjs"; assert.equal(releaseVersion(process.env.RELEASE_TAG).channel,"next");'
+if node scripts/tag-release-cli.mjs preflight >"$work/completion-negative.log" 2>&1; then
+  echo "Unpublished fixture must not pass source completion" >&2; exit 1
+fi
+grep -Fq 'Error: Registry version must already be published: absent' "$work/completion-negative.log"
 # Reject a known existing version using the same registry classifier.
 node scripts/check-published.mjs
 # Build an archive from the committed source; the private manifest changes only in the isolated copy.
