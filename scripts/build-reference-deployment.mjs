@@ -1,14 +1,14 @@
 import {cp,mkdir,mkdtemp,readFile,readdir,rm,writeFile} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
-import {resolve,join,relative} from 'node:path';
+import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {sha256,validateCatalog,verifyArchive} from './docs-versions/contract.mjs';
-const root=process.cwd(),output=resolve(process.argv[2]||'');
-if(!process.argv[2]||output===root||!relative(root,output).startsWith('..'))throw Error('Provide a fresh output directory outside the source checkout');
+import {inventory,validateArtifact,verifyLocal,resolveBuildOutput} from './reference-artifact.mjs';
+const root=process.cwd(),output=await resolveBuildOutput(root,process.argv[2]);
 const json=path=>readFile(path,'utf8').then(JSON.parse),pkg=await json('package.json'),pin=await json('docs-release-lock.json'),delivery=await json('docs-delivery.json'),family=pin.family;
 if(delivery.mode!=='static-reference'||delivery.advancedArchive?.enabled!==false)throw Error('Unverified advanced archive is not a deployment option');
 if(execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim())throw Error('Reference build requires a clean committed source tree');
-const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),tree=execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim();
 await mkdir(output);const temp=await mkdtemp(join(tmpdir(),'nightjar-react-reference-'));
 const run=(script,env={})=>execFileSync(process.execPath,[script],{cwd:root,env:{...process.env,...env},stdio:'inherit',timeout:240000});
 const snapshots=[];
@@ -33,7 +33,9 @@ try {
   snapshots.push({base,version:pkg.version,manifestSha256:digest,files:manifest.files.length,sourceCommit:manifest.source.commit});
  }
  if(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()!==commit)throw Error('Source moved during reference assembly');
- const provenance={schemaVersion:1,family,framework:'react',package:{name:pkg.name,version:pkg.version},source:{repository:family+'design/react',commit},core:pin.core,delivery,snapshots};
+ const provenance={schemaVersion:1,family,framework:'react',package:{name:pkg.name,version:pkg.version},source:{repository:family+'design/react',commit,tree},core:pin.core,delivery,snapshots};
  await writeFile(join(output,'version.json'),JSON.stringify(provenance,null,2)+'\n');
+ const artifact=validateArtifact({schemaVersion:1,family,framework:'react',source:provenance.source,files:await inventory(output)});
+ await writeFile(join(output,'artifact.json'),JSON.stringify(artifact,null,2)+'\n');await verifyLocal(output,artifact);
  console.log(JSON.stringify({output,...provenance}));
 } finally {await rm(temp,{recursive:true,force:true});}

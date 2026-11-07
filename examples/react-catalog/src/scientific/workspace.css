@@ -1,10 +1,11 @@
-.science-regions { display:grid; gap:2.5rem; overflow-wrap:anywhere; }
-.science-regions form fieldset { display:grid; gap:1rem; }
+.science-regions { display:grid; grid-template-columns:minmax(0,1fr); gap:2.5rem; overflow-wrap:anywhere; }
+.science-regions > section, .science-regions form, .science-regions fieldset { min-inline-size:0; }
+.science-regions form fieldset { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; }
 .science-regions figure { margin:1.5rem 0; }
 .science-regions svg { display:block; max-width:100%; width:30rem; height:auto; }
 .science-regions svg line { stroke:currentColor; stroke-width:1; }
 .science-regions svg polyline { fill:none; stroke:currentColor; stroke-width:2.5; }
 .science-errors { margin-block:1rem; }
 .science-errors:focus { outline:2px solid currentColor; outline-offset:3px; }
-.science-regions button { justify-self:start; }
+.science-regions button { justify-self:start; min-inline-size:0; max-inline-size:100%; white-space:normal; overflow-wrap:anywhere; }
 @media (min-width:60rem) { .science-regions { grid-template-columns:minmax(15rem,1fr) minmax(0,1.5fr); align-items:start; } }

@@ -1,6 +1,6 @@
 {
   "name": "@martlet/react",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Experimental Martlet React components",
   "type": "module",
   "license": "MIT",
@@ -8,8 +8,10 @@
   "files": [
     "dist",
     "README.md",
+    "API.md",
     "LICENSE",
     "NOTICE.md",
+    "PROVENANCE.md",
     "CHANGELOG.md"
   ],
   "exports": {
@@ -26,7 +28,7 @@
     "react": "^19.0.0"
   },
   "dependencies": {
-    "@martlet/core": "2.2.3"
+    "@martlet/core": "2.2.4"
   },
   "scripts": {
     "build": "node build.mjs",

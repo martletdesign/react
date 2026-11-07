@@ -1,10 +1,20 @@
 # @martlet/react changelog
 
-## 0.2.0 — unpublished transfer candidate
+## 0.2.1
 
-Prepared standalone source, exact core dependency and independent build. This is not an approved release. Existing version 0.1.0 is published; the historical heading below records its earlier preparation state.
+- Correct enlarged-text dashboard navigation and scientific workspace reflow without reducing type size or removing content.
+- Apply the existing semantic placeholder role with explicit opacity; use the native TextInput in canonical search so all enabled appearances retain readable contrast.
+- Package owned API and installation guidance, reconcile published 0.2.0 facts and preserve historical source attribution.
+- Complete deterministic standalone reference integrity and post-publication GitHub source Release verification; retain stage-only npm publication.
+- Consume the corresponding Core type-declaration correction through an exact registry-backed dependency.
 
-## 0.1.0 — experimental candidate, unpublished
+## 0.2.0 — published 2026-11-03
+
+Standalone React 19 implementation with an exact published Core dependency, independent builds and verified staged npm publication. Historical preparation notes below are retained as provenance, not current publication status.
+
+## 0.1.0 — published experimental API
+
+The original preparation notes below retain the initial implementation rationale. Existing npm 0.1.0 is preserved; it is not the current standalone source release.
 
 Initial 22-component React 19 API with native form controls, modal dialog, manual-activation tabs, article compositions, table and pagination. Includes family CSS, TypeScript declarations and MIT source.
 

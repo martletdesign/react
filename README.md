@@ -1,17 +1,42 @@
-# Martlet React (experimental)
+# Martlet React
 
-This independent repository contains the experimental `@martlet/react` component implementation. Existing npm releases remain available. Standalone staging is prepared in the reviewed `stage-release.yml` workflow and `react-production-release` environment; npm trust and publication authority must be verified during the coordinated workbench cutover.
+`@martlet/react` supplies 22 native React 19 components, TypeScript declarations and the corresponding Core styles. The 0.2 line preserves the independently published 0.2.0 API; 0.2.1 adds packaged API guidance, standalone delivery verification and enlarged-text corrections. The API remains experimental while consumer and assistive-technology coverage grows. No workbench server is needed to install, build or run it.
 
-## Development
+```sh
+npm install @martlet/react react@^19 react-dom@^19
+```
 
-Use Node 24: `npm ci --ignore-scripts`, then `npm test`. `npm pack --ignore-scripts` creates a local candidate archive. The public repository keeps `private:true` in its manifest to prevent accidental publication; the reviewed staging workflow creates a publishable manifest only in an isolated export.
+```tsx
+import {Field, TextInput, Button} from '@martlet/react';
+import '@martlet/react/styles.css';
+import '@martlet/core/fonts.css';
 
-The exact published `@martlet/core` dependency supplies styles. Import `@martlet/react/styles.css`; load `@martlet/core/fonts.css` separately if desired. The public component API is experimental. Refer to [the historical component contracts](https://github.com/k3jph/design-workbench/blob/80a5635abe4de7a07a1983de0b3ef796b101e047/docs/components.md) for behavior and acceptance criteria.
+export function NameForm() {
+  return <div className="martlet" data-martlet="light">
+    <form onSubmit={event => event.preventDefault()}>
+      <Field label="Name" hint="Use the name shown on your record.">
+        {control => <TextInput {...control} name="name" required />}
+      </Field>
+      <Button type="submit">Save</Button>
+    </form>
+  </div>;
+}
+```
 
-The independent reference catalog contains all 50 canonical recipes, three dashboards and the scientific workspace. Browser verification covers Chromium, Firefox and WebKit at root and `/preview/`. `npm run build:gallery` builds the static site in `examples/react-catalog/dist/martlet`; use the examples index at `/examples/`. `docs-delivery.json` explicitly disables the advanced remote archive pathway until live Worker isolation and independent anti-rollback authority are verified. The ordinary static documentation build is the production delivery path; it makes no administrator-immutable archive claim. Automated checks do not replace manual assistive-technology assessment. See PROVENANCE.md for the source baseline and ownership transition.
+Use the family scope and `data-martlet="light"` or `"dark"` on the application boundary. Core supplies foundations; React supplies component relationships and behavior. The optional local font import serves font assets from your application. [API.md](API.md) documents the supported controls, state ownership and accessibility responsibilities; generated `dist/index.d.ts` defines their exact props.
 
-Build a complete deployment from a clean committed checkout with `npm run build:reference -- /fresh/output/path`. This assembles root and `/preview` catalogs plus checksum-verified static `/docs/v/0.2.0/` snapshots using the existing documentation implementation. `version.json` records the exact source, Core integrity and explicitly disabled advanced archive mode. The output is static-only and needs no storage credentials or Worker bindings beyond assets.
+## Standalone examples and development
 
-After npm stage approval, independently verify the exact registry archive and `npm audit signatures --json --include-attestations` output with `RELEASE_TAG=v0.2.0 APPROVED_SHA=<reviewed-main-sha> node scripts/tag-release-cli.mjs verify-stage-provenance <audit.json> <archive.tgz>`. This operation pins the standalone staging workflow, `main`, dispatch event and reviewed commit; the disabled tag workflow is a different identity.
+Use Node 24.19.0, run `npm ci --ignore-scripts`, then `npm test`. The editable independent catalog contains all 50 canonical examples, three dashboards and a scientific workspace. These use representative local data; saving, filtering, exports and recovery demonstrate application patterns, not a connected production service. Browser checks retain Chromium, Firefox and WebKit at root and `/preview/`, with bounded operations, diagnostics and failure deadlines. Automated checks do not replace manual assistive-technology review.
 
-Reproduce publishable archives with npm 11.15.0: export the exact reviewed source with `git archive`, set only the exported manifest to `private:false`, install and build in that isolated export, run `node scripts/normalize-package-modes.mjs .` there, then `npm pack --ignore-scripts`. All published regular files use mode 0644 and directories 0755; the normalizer refuses a Git working tree, executable-bin package or symlink payload.
+`npm run build:gallery` writes `examples/react-catalog/dist/martlet`; start at `/examples/`. Set `NIGHTJAR_BASE=/preview/` to exercise subpath delivery. From a clean committed checkout, `npm run build:reference -- /fresh/output/path` assembles both bases and checksum-verified `/docs/v/0.2.1/` snapshots. `version.json` records source and Core identity; `artifact.json` inventories every delivered file. `node scripts/verify-reference-deployment.mjs /output https://host develop` verifies the live accepted branch and every public payload before adoption. Deployment operations remain coordinated; source assembly alone does not prove a canonical website has been cut over. Explicit `/examples/` routes replace the former workbench catalog’s experimental root query selectors; this output does not ship that separate selector frontend or redirect `/reference/` to an unrelated content example.
+
+The reference output supports native Cloudflare static delivery with no Worker JavaScript or runtime bindings. If the existing custom adapter is used instead, its only binding is ASSETS and its legacy query redirect must remain disabled. `docs-delivery.json` keeps the advanced remote archive disabled; this static delivery makes no administrator-immutable storage or independent anti-rollback guarantee. See [PROVENANCE.md](PROVENANCE.md) for retained source attribution.
+
+## Publication
+
+The repository remains `private:true` to prevent accidental local publication. Only the `stage-release.yml` trusted publisher stages an exact accepted `main` revision; npm owner approval is a separate operation. Never approve bootstrap sentinels or restage a published version. Protected tags complete GitHub source Releases only after registry bytes and cryptographically verified provenance match the exact `main` stage workflow and commit. Tag completion has no npm publication authority.
+
+Reproduce publishable archives using npm 11.15.0: export the exact commit with `git archive`, change only the exported manifest to `private:false`, install and build there, run `node scripts/normalize-package-modes.mjs .`, then `npm pack --ignore-scripts`. The normalizer requires an isolated export and rejects symlinks. Verify the registry tarball and successful `npm audit signatures --json --include-attestations` output with `RELEASE_TAG=v0.2.1 APPROVED_SHA=<accepted-main-sha> node scripts/tag-release-cli.mjs verify-stage-provenance <audit.json> <archive.tgz>`.
+
+Acceptance follows the [ratified GitFlow policy](https://github.com/k3jph/design-workbench/blob/develop/docs/GITFLOW-ACCEPTANCE.md): one fast required `test` check, zero required human reviewers, advisory extended suites. Accepted `develop` and `main` authorize their respective deployments. Source and artifact identity checks do not reconstruct PR reviews or historical CI results.
