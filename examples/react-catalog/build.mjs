@@ -19,7 +19,7 @@ peerDashboardURL(process.env.NIGHTJAR_PEER_URL,'analytics');
 const rendered={};
 for(const page of catalog.pages.filter(item=>selected.includes(item.id))) for(const section of page.sections) if(section.body) rendered[`${page.id}-${section.id}`]=renderMarkdown(section.body,base,{fixtureMarkup:page.id==='stress-test',docId:`${page.id}-${section.id}`});
 await build({configFile,mode:family});
-const server=await createServer({configFile,mode:family,server:{middlewareMode:true},appType:'custom'});
+const server=await createServer({configFile,mode:family,server:{middlewareMode:true,hmr:false,watch:null},appType:'custom'});
 try {
  const {App}=await server.ssrLoadModule('/src/app.tsx');
  const {pages,validatePages,requiresSpecial}=await server.ssrLoadModule('/src/pages.ts');

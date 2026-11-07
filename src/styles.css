@@ -238,3 +238,6 @@
 .martlet-article-metadata { overflow-wrap:anywhere; }
 
 .martlet-disclosure > summary { overflow-wrap:anywhere; }
+
+/* Native and composed controls share the established semantic placeholder role. */
+.martlet :where(input, textarea)::placeholder { color:var(--martlet-input-placeholder); opacity:1; }

@@ -50,7 +50,7 @@ try {
     const context = await run('context.new', () => browser.newContext({ javaScriptEnabled: js, viewport: { width: 320, height: 720 } }));
     context.setDefaultTimeout(OPERATION_TIMEOUT_MS);
     context.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT_MS);
-    for (const route of ['examples/', 'examples/article/', 'examples/dashboard-analytics/', 'examples/scientific-workspace/']) {
+    for (const route of ['examples/', 'examples/article/', 'examples/search/', 'examples/dashboard-analytics/', 'examples/dashboard-administration/', 'examples/dashboard-operations/', 'examples/scientific-workspace/']) {
       scope = { javaScriptEnabled: js, route };
       const page = await run('page.new', () => context.newPage()), failures = [];
       page.on('pageerror', e => { failures.push(e.message); log({ operation: 'pageerror', state: 'diagnostic', error: e.message }); });
@@ -70,6 +70,66 @@ try {
           const a = await new AxeBuilder({ page }).analyze();
           assert.deepEqual(a.violations.map(v => v.id), []);
         }, 45_000);
+      }
+      if (js && /(?:search|dashboard-(?:administration|operations)|scientific-workspace)\/$/.test(route)) {
+        await run('hydration', () => page.locator('.source-shell[data-enhanced=true]').waitFor());
+        for (const mode of ['light', 'dark']) {
+          await run('appearance.' + mode, async () => {
+            const menu = page.locator('.ss-menu');
+            if (await menu.getAttribute('aria-expanded') !== 'true') await menu.click();
+            const appearance = page.locator('.ss-appearance');
+            if (await appearance.getAttribute('aria-pressed') !== String(mode === 'dark')) await appearance.click();
+            await menu.press('Escape');
+            await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+            await waitForFonts(page);
+            await page.waitForTimeout(100);
+          });
+          await run('enlarged-text.reflow.' + mode, async () => {
+            const measurement = await page.evaluate(() => ({width: innerWidth, scrollWidth: document.documentElement.scrollWidth}));
+            assert.ok(measurement.scrollWidth <= measurement.width, route + ' 200% text ' + mode + ': ' + JSON.stringify(measurement));
+          });
+          if (route === 'examples/search/' || route === 'examples/dashboard-administration/') {
+            await run('placeholder.contrast.' + mode, async () => {
+              const input = page.locator('input[placeholder]:enabled').first();
+              await input.waitFor();
+              const measurement = await input.evaluate(control => {
+                const parse = color => { const values = color.match(/[\d.]+/g).map(Number); return [...values.slice(0, 3), values[3] ?? 1]; };
+                const over = (front, back) => { const alpha = front[3] + back[3] * (1 - front[3]); return [...front.slice(0, 3).map((value, index) => (value * front[3] + back[index] * back[3] * (1 - front[3])) / alpha), alpha]; };
+                const ancestors = []; for (let element = control; element; element = element.parentElement) ancestors.unshift(element);
+                let background = [255, 255, 255, 1];
+                for (const element of ancestors) background = over(parse(getComputedStyle(element).backgroundColor), background);
+                const style = getComputedStyle(control, '::placeholder'), foreground = parse(style.color);
+                foreground[3] *= Number(style.opacity) * Number(getComputedStyle(control).opacity);
+                const effective = over(foreground, background);
+                const luminance = color => color.slice(0, 3).map(value => value / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4).reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+                const a = luminance(effective), b = luminance(background);
+                return {placeholder: control.placeholder, color: style.color, opacity: style.opacity, background, ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)};
+              });
+              log({operation: 'placeholder', state: 'diagnostic', mode, ...measurement});
+              assert.ok(measurement.ratio >= 4.5, 'Normal placeholder contrast below 4.5: ' + JSON.stringify(measurement));
+            });
+          }
+          if (route.includes('dashboard-')) {
+            await run('enlarged-text.navigation.' + mode, async () => {
+              const toggle = page.locator('.rd-nav-toggle');
+              const fragments = await toggle.evaluate(button => {
+                const text = [...button.childNodes].find(node => node.nodeType === Node.TEXT_NODE);
+                if (!text) throw Error('Dashboard toggle label missing');
+                return [...text.textContent.matchAll(/\S+/g)].map(match => {
+                  const range = document.createRange(); range.setStart(text, match.index); range.setEnd(text, match.index + match[0].length);
+                  return {word: match[0], lines: new Set([...range.getClientRects()].map(rect => Math.round(rect.top))).size};
+                });
+              });
+              assert.equal(fragments.length, 2);
+              assert.ok(fragments.every(word => word.lines === 1), 'Navigation label fragments a word: ' + JSON.stringify(fragments));
+              await toggle.focus(); await toggle.press('Enter');
+              assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+              await page.locator('.rd-nav nav a').first().focus(); await page.keyboard.press('Escape');
+              assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+              assert.equal(await toggle.evaluate(button => button === document.activeElement), true);
+            });
+          }
+        }
       }
       await run('browser.errors', () => assert.deepEqual(failures, [], route));
       await run('page.close', () => page.close(), 5_000);
