@@ -3,7 +3,7 @@
   "core": {
     "name": "@martlet/core",
     "version": "2.2.4",
-    "integrity": "sha512-nci8BjT2IPjNxq6YiMqlV7zTwhC2HloM6HTUrze3ZWXcXvzteKH2T6NOvBEWXIfeZopZO+o7EkqKAEFueXtdCg=="
+    "integrity": "sha512-LY8Fkh1KUIdF+dU/RVxPE+XebiXLRCDjeWjnDeqPlrkv7795v9m6vN2kkeu3PdFy5qlQjWQ6TYJnyVLKcJKpIg=="
   },
   "vite": "8.3.5"
 }
