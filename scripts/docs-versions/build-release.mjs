@@ -18,6 +18,9 @@ if(baseline.versions.length)validateCatalog(baseline);else if(baseline.latestSta
 const prefix=env.DOCS_DEPLOY_PREFIX??'';
 if(prefix&&(!/^\/(?:[A-Za-z0-9._~-]+)(?:\/[A-Za-z0-9._~-]+)*$/.test(prefix)||prefix.split('/').some(x=>x==='..'||x==='.') ))throw Error('Invalid deployment prefix');
 const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const epoch=execFileSync('git',['show','-s','--format=%ct',commit],{encoding:'utf8'}).trim();
+if(env.SOURCE_DATE_EPOCH && env.SOURCE_DATE_EPOCH!==epoch)throw Error('Snapshot timestamp must match the exact source commit');
+const createdAt=new Date(Number(epoch)*1000).toISOString();
 if(env.GITHUB_SHA&&env.GITHUB_SHA!==commit)throw Error('Source commit differs from event');
 if(execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim())throw Error('Documentation source tree must be clean');
 try{await lstat(join(resolve(env.DOCS_ARCHIVE_ROOT),version));throw Error('Snapshot version already exists');}catch(e){if(e.code!=='ENOENT')throw e;}
@@ -52,7 +55,7 @@ try{
   await writeFile(path,html);
  }
  await mkdir(join(dist,'provenance'),{recursive:true});await cp(join(site,'package-lock.json'),join(dist,'provenance','package-lock.json'));
- const metadata={schemaVersion:1,family,framework:'react',docsVersion:version,basePath:`/docs/v/${version}/`,implementation:{kind:'npm',name:pkg.name,version,tag:`v${version}`},core:pin.core,source:{repository:`${family}design/react`,commit,tag:`v${version}`},fixtures:{source:'workbench',workbenchCommit:'04d3e14b1b1943cbf2a90f1a727822d87327b2ae'},toolchain:{node:process.versions.node,npm:run('npm',['--version'],root).trim(),vite:pin.vite},createdAt:new Date().toISOString(),indexing:'noindex'};
+ const metadata={schemaVersion:1,family,framework:'react',docsVersion:version,basePath:`/docs/v/${version}/`,implementation:{kind:'npm',name:pkg.name,version,tag:`v${version}`},core:pin.core,source:{repository:`${family}design/react`,commit,tag:`v${version}`},fixtures:{source:'workbench',workbenchCommit:'04d3e14b1b1943cbf2a90f1a727822d87327b2ae'},toolchain:{node:process.versions.node,npm:run('npm',['--version'],root).trim(),vite:pin.vite},createdAt,indexing:'noindex'};
  const snapshot=await createSnapshot({buildRoot:dist,archiveRoot:resolve(env.DOCS_ARCHIVE_ROOT),metadata,coreLock:lock,baselineBytes:bytes,baselineSha256:env.DOCS_BASELINE_SHA256});
  console.log(JSON.stringify({snapshot,baselineSha256:env.DOCS_BASELINE_SHA256,latestPromoted:false}));
 }finally{await rm(temp,{recursive:true,force:true});}

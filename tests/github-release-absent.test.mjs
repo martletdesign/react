@@ -25,11 +25,12 @@ test('only a definite GitHub release 404 permits publication to proceed', async 
     await assert.rejects(releaseAbsent(async()=>({status:404}),invalid));
 });
 
-test('release availability is checked before npm publication and again before release creation', async () => {
+test('release availability is checked before verification and again before source release creation', async () => {
   const workflow=await readFile('.github/workflows/tag-release.yml','utf8');
   const checks=[...workflow.matchAll(/node scripts\/github-release-absent\.mjs/g)].map(match=>match.index);
   assert.equal(checks.length,2);
-  assert.ok(checks[0] < workflow.indexOf('npm publish '));
-  assert.ok(checks[1] > workflow.indexOf('npm publish ') && checks[1] < workflow.indexOf('gh release create '));
+  assert.ok(checks[0] < workflow.indexOf('verify-registry'));
+  assert.doesNotMatch(workflow,/npm (?:publish|stage publish)|id-token:/);
+  assert.ok(checks[1] > workflow.indexOf('verify-provenance') && checks[1] < workflow.indexOf('gh release create '));
   assert.doesNotMatch(workflow,/gh release view/);
 });

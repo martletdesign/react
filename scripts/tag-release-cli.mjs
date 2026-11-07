@@ -13,11 +13,10 @@ const packageURL=new URL(encodeURIComponent(name),registry).href;
 const versionURL=`${packageURL}/${encodeURIComponent(version??'')}`;
 
 if(command==='preflight') {
-  if(process.env.RELEASE_ENVIRONMENT_READY!=='yes') throw Error('Protected release environment sentinel missing');
   const info=await identityFromFiles({tag,repository:process.env.GITHUB_REPOSITORY,expectedRepository:repository,expectedName:name});
   productionCommit({git:realGit,tag,sha:process.env.GITHUB_SHA,protectedRef:process.env.REF_PROTECTED});
   const state=await registryState(fetchTimed,registry,name,info.version);
-  if(state!=='absent') throw Error(`Registry version state: ${state}`);
+  if(state!=='present') throw Error(`Registry version must already be published: ${state}`);
   await appendFile(process.env.GITHUB_OUTPUT,`name=${name}\nversion=${info.version}\nchannel=${info.channel}\n`);
 } else if(command==='verify-tag') {
   await identityFromFiles({tag,repository:process.env.GITHUB_REPOSITORY,expectedRepository:repository,expectedName:name});
@@ -25,7 +24,7 @@ if(command==='preflight') {
 } else if(command==='inspect') {
   const archive=process.argv[3];
   const files=execFileSync('tar',['-tzf',archive],{encoding:'utf8'}).trim().split('\n');
-  if(!files.every(p=>p.startsWith('package/')&&!p.includes('..')) || !['package/package.json','package/LICENSE','package/README.md','package/dist/index.js','package/dist/index.d.ts','package/dist/styles.css'].every(p=>files.includes(p))) throw Error('Unexpected package archive contents');
+  if(!files.every(p=>p.startsWith('package/')&&!p.includes('..')) || !['package/package.json','package/LICENSE','package/README.md','package/API.md','package/NOTICE.md','package/PROVENANCE.md','package/dist/index.js','package/dist/index.d.ts','package/dist/styles.css'].every(p=>files.includes(p))) throw Error('Unexpected package archive contents');
   const listing=execFileSync('tar',['-tvzf',archive],{encoding:'utf8'}).trim().split('\n');
   if(!listing.every(line=>line.startsWith('-'))) throw Error('Non-regular entry in package archive');
   const manifest=JSON.parse(execFileSync('tar',['-xOzf',archive,'package/package.json'],{encoding:'utf8'}));
@@ -39,7 +38,7 @@ if(command==='preflight') {
   if(!verifyStagedProvenance({audit,archive,name,version,repository,commit:process.env.APPROVED_SHA}))throw Error('Verified provenance does not match standalone staging workflow, main ref and reviewed source commit');
 } else if(command==='verify-provenance') {
   const audit=JSON.parse(await readFile(process.argv[3],'utf8')),archive=await readFile(process.argv[4]);
-  if(!verifyProvenance({audit,archive,name,version,repository,tag,commit:process.env.GITHUB_SHA})) throw Error('Verified provenance does not match the release workflow and commit');
+  if(!verifyStagedProvenance({audit,archive,name,version,repository,commit:process.env.GITHUB_SHA})) throw Error('Verified provenance does not match the main staging workflow and exact tagged commit');
 } else if(command==='verify-registry') {
   const local=await readFile(process.argv[3]);
   let verified=false;

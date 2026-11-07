@@ -1,4 +1,4 @@
-name: React tag release (disabled proposal)
+name: Complete published React source release
 on:
   push:
     tags: ['v*']
@@ -8,89 +8,42 @@ concurrency:
   group: react-tag-release-${{ github.repository }}
   cancel-in-progress: false
 jobs:
-  verify:
-    if: ${{ false }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        browser: [chromium, firefox, webkit]
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '24.19.0'
-      - run: npm ci --ignore-scripts && npm test
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
-        timeout-minutes: 5
-      - run: npm run test:browser
-        timeout-minutes: 4
-        env:
-          DESIGN_BROWSER: ${{ matrix.browser }}
-  docs:
-    if: ${{ false }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '24.19.0'
-      - run: node scripts/verify-docs-published.mjs
   release:
-    needs: [verify, docs]
-    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: react-production-release
     permissions:
       contents: write
-      id-token: write
     env:
       RELEASE_TAG: ${{ github.ref_name }}
       REF_PROTECTED: ${{ github.ref_protected }}
-      RELEASE_ENVIRONMENT_READY: ${{ vars.REACT_RELEASE_ENVIRONMENT_READY }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24.19.0'
       - run: npm install --global npm@11.15.0 --ignore-scripts
-      - name: Verify protected tag, production history, package identity and registry
+      - name: Verify protected tag, accepted main and already published identity
         id: identity
         run: node scripts/tag-release-cli.mjs preflight
-      - run: npm ci --ignore-scripts && npm test && git diff --exit-code
-      - name: Build and inspect isolated publishable archive
+      - name: Require definite absence of this GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/github-release-absent.mjs
+      - name: Reproduce the exact normalized package archive
         run: |
           set -euo pipefail
           umask 077
           mkdir "$RUNNER_TEMP/react-src" "$RUNNER_TEMP/react-out"
-          git archive HEAD | tar -x -C "$RUNNER_TEMP/react-src"
+          git archive HEAD | tar --same-permissions -x -C "$RUNNER_TEMP/react-src"
           node -e 'const fs=require("fs"),p=process.argv[1],v=JSON.parse(fs.readFileSync(p));if(v.private!==true)process.exit(1);v.private=false;fs.writeFileSync(p,JSON.stringify(v,null,2)+"\n")' "$RUNNER_TEMP/react-src/package.json"
-          (cd "$RUNNER_TEMP/react-src" && npm ci --ignore-scripts && npm run build && node scripts/normalize-package-modes.mjs . && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/react-out")
+          (cd "$RUNNER_TEMP/react-src" && npm ci --ignore-scripts --no-audit --no-fund && npm run build && node scripts/normalize-package-modes.mjs . && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/react-out")
           node scripts/tag-release-cli.mjs inspect "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz"
-      - name: Require verified immutable documentation before publishing
-        run: node scripts/verify-docs-published.mjs
-      - name: Recheck tag and registry immediately before publication
-        run: node scripts/tag-release-cli.mjs preflight
-      - name: Refuse an existing or unverifiable GitHub Release before npm publication
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: node scripts/github-release-absent.mjs
-      - name: Publish the inspected archive with provenance
-        run: npm publish "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" --access public --tag "${{ steps.identity.outputs.channel }}" --provenance
-      - name: Verify registry identity, integrity and bytes
+      - name: Verify registry identity, integrity and exact bytes
         run: node scripts/tag-release-cli.mjs verify-registry "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz"
-      - name: Verify registry signatures and exact release provenance
+      - name: Verify signatures and actual main stage workflow provenance
         env:
           PACKAGE_NAME: ${{ steps.identity.outputs.name }}
           PACKAGE_VERSION: ${{ steps.identity.outputs.version }}
@@ -100,20 +53,29 @@ jobs:
           printf '{"name":"release-verification","version":"0.0.0","private":true}\n' > "$RUNNER_TEMP/provenance-consumer/package.json"
           (cd "$RUNNER_TEMP/provenance-consumer" && npm install --ignore-scripts --no-audit --no-fund --save-exact "$PACKAGE_NAME@$PACKAGE_VERSION" && npm audit signatures --json --include-attestations > "$RUNNER_TEMP/provenance-audit.json")
           node scripts/tag-release-cli.mjs verify-provenance "$RUNNER_TEMP/provenance-audit.json" "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz"
-      - name: Recheck tag before release creation
-        run: node scripts/tag-release-cli.mjs verify-tag
-      - name: Recheck release absence immediately before creation
+      - name: Recheck protected tag and definite release absence
         env:
           GH_TOKEN: ${{ github.token }}
-        run: node scripts/github-release-absent.mjs
-      - name: Create release after package verification
+        run: |
+          node scripts/tag-release-cli.mjs verify-tag
+          node scripts/github-release-absent.mjs
+      - name: Create source Release from verified published bytes
         env:
           GH_TOKEN: ${{ github.token }}
           CHANNEL: ${{ steps.identity.outputs.channel }}
         run: |
           set -euo pipefail
-          if [ "$CHANNEL" = next ]; then
-            gh release create "$RELEASE_TAG" --verify-tag --generate-notes --prerelease
-          else
-            gh release create "$RELEASE_TAG" --verify-tag --generate-notes
-          fi
+          cd "$RUNNER_TEMP/react-out"
+          sha256sum martlet-react-${{ steps.identity.outputs.version }}.tgz > SHA256SUMS
+          args=("$RELEASE_TAG" "martlet-react-${{ steps.identity.outputs.version }}.tgz" SHA256SUMS --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes)
+          if [ "$CHANNEL" = next ]; then args+=(--prerelease); fi
+          gh release create "${args[@]}"
+      - name: Verify published source assets by downloading them again
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/release-download"
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/release-download" --pattern '*.tgz' --pattern SHA256SUMS
+          (cd "$RUNNER_TEMP/release-download" && sha256sum --check SHA256SUMS)
+          cmp "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" "$RUNNER_TEMP/release-download/martlet-react-${{ steps.identity.outputs.version }}.tgz"
