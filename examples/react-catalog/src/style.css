@@ -2,7 +2,7 @@
 .recipe-cards h3,.recipe-listing h3 {margin-bottom:.3rem}
 .recipe-listing {list-style:none;padding:0}.recipe-listing li {margin-block:1.5rem}
 .recipe-meta {font-size:.875rem}.recipe-actions {list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:1rem}
-[data-example] section {margin-block:2.5rem;overflow-wrap:anywhere}
+[data-example] section {overflow-wrap:anywhere}
 @media print {.recipe-listing [hidden] {display:list-item !important} nav[aria-label$=" pages"] {display:none}}
 .recipe-prose {overflow-wrap:anywhere}
 [data-example] figure {margin-inline:0}[data-example] figure img {max-width:100%;height:auto}
