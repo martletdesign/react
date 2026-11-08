@@ -9,7 +9,7 @@ body{margin:0}.source-shell{min-height:100vh}.source-shell main{min-width:0}
 /* The package foundation resets browser block margins. Restore the canonical
    editorial rhythm in the reference application, without changing package APIs. */
 .martlet .source-shell .editorial-content p {margin-block:1em}
-.martlet .source-shell .editorial-content h2 {margin-block:.83em}
+.martlet .source-shell .editorial-content h2 {margin-block:2.2em .83em}
 .martlet .source-shell .editorial-content h3 {margin-block:2em 1em}
 .martlet .source-shell .editorial-content>:first-child {margin-block-start:0}
 .martlet .source-shell .editorial-content :is(ul,ol) {margin-block:1em;padding-inline-start:2.5rem}
