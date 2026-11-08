@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {authorizeRun,publisherDispatch,assertTagAvailable,ensureTagAndDispatch,verifyPublishedArchive,githubClient} from '../scripts/automatic-release.mjs';
+import {authorizeRun,publisherDispatch,assertTagAvailable,ensureTagAndDispatch,verifyPublishedArchive,waitForPublishedArchive,githubClient} from '../scripts/automatic-release.mjs';
 
 const pkg=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
 const repository=pkg.repository.url.replace('git+https://github.com/','').replace(/\.git$/,'');
@@ -107,4 +107,29 @@ test('skipped PR completion cannot cancel a genuine main publisher watcher',asyn
  assert.equal(group('push'),group('push'));
  assert.doesNotMatch(template,/head_sha|run_id|run_number/);
  assert.match(workflow,/cancel-in-progress: true/);
+});
+
+function propagationFixture(){
+ const bytes=Buffer.from('genuine immutable published archive'),metadata={name:pkg.name,version:'0.2.9',dist:{integrity:'sha512-'+createHash('sha512').update(bytes).digest('base64'),tarball:'https://registry.npmjs.org/archive.tgz'}};
+ return {bytes,metadata,expectedSha256:createHash('sha256').update(bytes).digest('hex')};
+}
+test('registry and tarball propagation retry only within the overall deadline, with diagnostics',async()=>{
+ const f=propagationFixture();let time=0,metadataReads=0,archiveReads=0;const diagnostics=[];
+ const fetcher=async url=>{if(url.endsWith('/0.2.9'))return ++metadataReads<3?new Response('pending',{status:404}):Response.json(f.metadata);return ++archiveReads===1?new Response('pending',{status:404}):new Response(f.bytes);};
+ const result=await waitForPublishedArchive({name:pkg.name,version:'0.2.9',expectedSha256:f.expectedSha256,fetcher,timeoutMs:20,intervalMs:5,now:()=>time,pause:async ms=>{time+=ms},log:entry=>diagnostics.push(entry)});
+ assert.deepEqual(result.bytes,f.bytes);assert.equal(time,15);assert.equal(metadataReads,4);assert.equal(archiveReads,2);
+ assert.deepEqual(diagnostics.filter(x=>x.state==='pending').map(x=>[x.operation,x.status]),[['registry-metadata',404],['registry-metadata',404],['registry-tarball',404]]);
+ assert.equal(diagnostics.at(-1).state,'verified');
+});
+test('publication propagation has a hard deadline and never treats a timeout as success',async()=>{
+ let time=0,reads=0;const diagnostics=[];
+ await assert.rejects(waitForPublishedArchive({name:pkg.name,version:'0.2.9',expectedSha256:digest,fetcher:async()=>{reads++;return new Response('pending',{status:404})},timeoutMs:10,intervalMs:4,now:()=>time,pause:async ms=>{time+=ms},log:entry=>diagnostics.push(entry)}),/exceeded 10ms.*registry-metadata: 404/);
+ assert.equal(time,10);assert.equal(reads,3);assert.equal(diagnostics.some(x=>x.state==='verified'),false);
+});
+test('corrupted publication, substituted identity and authentication failures fail immediately without retry',async()=>{
+ const f=propagationFixture();
+ for(const kind of ['bytes','identity','authentication']){let calls=0,pauses=0;const fetcher=async url=>{calls++;if(kind==='authentication')return new Response('',{status:403});if(url.endsWith('/0.2.9'))return Response.json(kind==='identity'?{...f.metadata,name:'@foreign/react'}:f.metadata);return new Response(Buffer.from('different archive'));};
+  await assert.rejects(waitForPublishedArchive({name:pkg.name,version:'0.2.9',expectedSha256:f.expectedSha256,fetcher,timeoutMs:20,intervalMs:5,pause:async()=>{pauses++},log:()=>{}}));
+  assert.equal(pauses,0);assert.equal(calls,kind==='bytes'?2:1);
+ }
 });

@@ -11,11 +11,49 @@ const registry='https://registry.npmjs.org/';
 const shaPattern=/^[a-f0-9]{40}$/;
 const digestPattern=/^[a-f0-9]{64}$/;
 const git=args=>execFileSync('git',args,{encoding:'utf8',timeout:30000,stdio:['ignore','pipe','pipe']}).trim();
-const fetchTimed=(url,options={})=>fetch(url,{...options,redirect:'error',signal:AbortSignal.timeout(15000)});
+const fetchTimed=(url,options={})=>fetch(url,{...options,redirect:'error',signal:options.signal?AbortSignal.any([options.signal,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000)});
 
 export function verifyPublishedArchive({bytes,metadata,name,version,expectedSha256}) {
  assert(Buffer.isBuffer(bytes)&&digestPattern.test(expectedSha256??''),'Invalid completed archive evidence');
  assert(createHash('sha256').update(bytes).digest('hex')===expectedSha256&&verifyArchive({local:bytes,remote:bytes,metadata,name,version}),'Published registry bytes differ from the approved archive');
+}
+
+export async function waitForPublishedArchive({name,version,expectedSha256,fetcher=fetchTimed,timeoutMs=90000,intervalMs=5000,now=Date.now,pause=ms=>new Promise(resolve=>setTimeout(resolve,ms)),log=entry=>console.log(JSON.stringify(entry))}) {
+ assert(timeoutMs>0&&timeoutMs<=90000&&intervalMs>0,'Invalid publication propagation deadline');
+ const started=now(),deadline=started+timeoutMs;let last={operation:'registry-metadata',status:'not-requested'};
+ const transient=new Set([404,408,429,500,502,503,504]);
+ const request=async(url,operation)=>{
+  const remaining=deadline-now();assert(remaining>0,'Registry publication deadline exhausted');
+  let response;
+  try{response=await fetcher(url,{signal:AbortSignal.timeout(Math.max(1,Math.min(15000,remaining)))});}
+  catch(error){if(!['TypeError','TimeoutError','AbortError'].includes(error.name))throw error;return {pending:true,operation,status:error.name};}
+  if(transient.has(response.status))return {pending:true,operation,status:response.status};
+  assert(response.status===200,`${operation} returned ${response.status}; publication identity cannot be verified`);
+  return {response};
+ };
+ for(let attempt=1;;attempt++){
+  if(now()>=deadline)throw Error(`Registry publication propagation exceeded ${timeoutMs}ms (${last.operation}: ${last.status})`);
+  const metadataResult=await request(registry+encodeURIComponent(name)+'/'+encodeURIComponent(version),'registry-metadata');let pending=metadataResult;
+  if(!metadataResult.pending){
+   const metadata=await metadataResult.response.json();
+   assert(metadata.name===name&&metadata.version===version&&/^sha512-[A-Za-z0-9+/]{86}==$/.test(metadata.dist?.integrity??''),'Published registry identity or integrity differs');
+   const tarball=new URL(metadata.dist.tarball);
+   assert(tarball.origin==='https://registry.npmjs.org'&&!tarball.username&&!tarball.password,'Unexpected published archive origin');
+   const archiveResult=await request(tarball.href,'registry-tarball');pending=archiveResult;
+   if(!archiveResult.pending){
+    const reader=archiveResult.response.body.getReader(),chunks=[];let size=0;
+    for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>32*1024*1024){await reader.cancel();throw Error('Published archive exceeds bounded payload');}chunks.push(Buffer.from(value));}
+    const bytes=Buffer.concat(chunks);
+    // A different identity or bytes is an immediate failure, never propagation.
+    verifyPublishedArchive({bytes,metadata,name,version,expectedSha256});
+    log({operation:'published-archive',state:'verified',attempt,elapsedMs:now()-started,bytes:bytes.length});return {metadata,bytes};
+   }
+  }
+  last=pending;const remaining=deadline-now();
+  log({operation:pending.operation,state:'pending',status:pending.status,attempt,elapsedMs:now()-started,remainingMs:Math.max(0,remaining)});
+  if(remaining<=0)throw Error(`Registry publication propagation exceeded ${timeoutMs}ms (${last.operation}: ${last.status})`);
+  await pause(Math.min(intervalMs,remaining));
+ }
 }
 
 export function authorizeRun({event,workflow,expectedRepository,checkoutSha,remoteMainSha,protectedRef}) {
@@ -112,15 +150,7 @@ async function completedPublication(api,env) {
  assert(git(['rev-list','--first-parent','refs/remotes/origin/main']).split('\n').includes(sha),'Published source is not eligible main history');
  const pkg=JSON.parse(await readFile('package.json','utf8')),tag='v'+pkg.version;
  await identityFromFiles({tag,repository:env.GITHUB_REPOSITORY,expectedRepository:repository,expectedName:'@'+repository.split('/')[0].replace(/design$/,'')+'/react'});
- const metadataResponse=await fetchTimed(registry+encodeURIComponent(pkg.name)+'/'+encodeURIComponent(pkg.version));
- assert(metadataResponse.status===200,'Published registry identity is unavailable');
- const metadata=await metadataResponse.json(),tarball=new URL(metadata?.dist?.tarball);
- assert(tarball.origin==='https://registry.npmjs.org'&&!tarball.username&&!tarball.password,'Unexpected published archive origin');
- const response=await fetchTimed(tarball.href);assert(response.status===200,'Published archive is unavailable');
- const reader=response.body.getReader(),chunks=[];let size=0;
- for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>32*1024*1024){await reader.cancel();throw Error('Published archive exceeds bounded payload');}chunks.push(Buffer.from(value));}
- const bytes=Buffer.concat(chunks);
- verifyPublishedArchive({bytes,metadata,name:pkg.name,version:pkg.version,expectedSha256:env.EXPECTED_SHA256});
+ const {bytes}=await waitForPublishedArchive({name:pkg.name,version:pkg.version,expectedSha256:env.EXPECTED_SHA256});
  return ensureTagAndDispatch(api,{repository,tag,sha,filename:pkg.name.slice(1).replace('/','-')+'-'+pkg.version+'.tgz',archiveSha256:env.EXPECTED_SHA256,archiveBytes:bytes.length});
 }
 
