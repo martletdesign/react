@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: react-automatic-publication-${{ github.repository }}
+  group: react-automatic-publication-${{ github.repository }}-${{ github.event.workflow_run.event }}-${{ github.event.workflow_run.head_branch }}-${{ github.event.workflow_run.conclusion }}
   cancel-in-progress: true
 jobs:
   dispatch:

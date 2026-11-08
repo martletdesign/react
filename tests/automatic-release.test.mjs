@@ -92,3 +92,19 @@ test('the single required fast job and full browser assertions remain separate f
  assert.match(release,/workflow_dispatch:/);assert.match(release,/tags: \['v\*'\]/);assert.doesNotMatch(release,/npm publish|id-token:/);
  assert.match(release,/verify-registry/);assert.match(release,/verify-provenance/);
 });
+
+// Workflow-level concurrency is evaluated before job-level event guards.
+// A main→develop PR has head_branch=main but must not cancel its main push.
+test('skipped PR completion cannot cancel a genuine main publisher watcher',async()=>{
+ const workflow=await readFile(new URL('../.github/workflows/automatic-release.yml',import.meta.url),'utf8');
+ const template=workflow.match(/^  group: (.+)$/m)?.[1];assert.ok(template);
+ const group=(event,branch='main',conclusion='success')=>template.replace(/\$\{\{ github.repository \}\}/g,repository).replace(/\$\{\{ github.event.workflow_run.event \}\}/g,event).replace(/\$\{\{ github.event.workflow_run.head_branch \}\}/g,branch).replace(/\$\{\{ github.event.workflow_run.conclusion \}\}/g,conclusion);
+ assert.notEqual(group('push'),group('pull_request'));
+ assert.notEqual(group('push','main'),group('push','develop'));
+ assert.notEqual(group('push'),group('push','main','cancelled'));
+ assert.notEqual(group('push'),group('push','main','failure'));
+ assert.doesNotMatch(group('push'),/\$\{\{/);
+ assert.equal(group('push'),group('push'));
+ assert.doesNotMatch(template,/head_sha|run_id|run_number/);
+ assert.match(workflow,/cancel-in-progress: true/);
+});
