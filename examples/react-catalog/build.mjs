@@ -43,9 +43,16 @@ try {
   const styles=css.map(file=>`<link rel="stylesheet" crossorigin href="${base}${file}">`).join('');
   await writeFile(resolve(dir,'index.html'),renderDocument(template,{styles:styles+pageDataElement(data),markup,title:`${page.title} · Northlight`,originalTitle:'<title>Northlight examples</title>'}));
  }
+ for(const id of ['site-home','language','journal','setup','image-credits','docs','docs-versions']){
+  const dir=resolve(out,id==='site-home'?'':id==='docs-versions'?'docs/versions':id);await mkdir(dir,{recursive:true});
+  const data={id,page:null,rendered:{},entries:[],requiresSpecial:false};
+  const markup=renderToString(React.createElement(App,{data}));
+  const titles={'site-home':'Martlet, in plain sight.',language:'A language worth keeping.',journal:'Notes from the workshop.',setup:'Make it your own.','image-credits':'Image credits.',docs:'React documentation.','docs-versions':'Documentation versions.'};
+  await writeFile(resolve(dir,'index.html'),renderDocument(template,{styles:pageDataElement(data),markup,title:titles[id]+' · Martlet React',originalTitle:'<title>Northlight examples</title>'}));
+ }
  const indexDir=resolve(out,'examples');await mkdir(indexDir,{recursive:true});
  const indexData={id:'index',page:null,rendered:{},entries,requiresSpecial:false};
- await writeFile(resolve(indexDir,'index.html'),renderDocument(template,{styles:pageDataElement(indexData),markup:renderToString(React.createElement(App,{data:indexData})),title:'All page examples · Northlight',originalTitle:'<title>Northlight examples</title>'}));
+ await writeFile(resolve(indexDir,'index.html'),renderDocument(template,{styles:pageDataElement(indexData),markup:renderToString(React.createElement(App,{data:indexData})),title:'A collection of possibilities. · Martlet React',originalTitle:'<title>Northlight examples</title>'}));
  for(const [id,name] of dashboards){
   const module=await server.ssrLoadModule(`/src/dashboard/${name}.tsx`);const dir=resolve(indexDir,`dashboard-${id}`);await mkdir(dir,{recursive:true});
   const markup=renderToString(React.createElement(DashboardFrame,{current:id},React.createElement(module[name])));
@@ -57,6 +64,6 @@ try {
  const scientificDir=resolve(indexDir,'scientific-workspace');await mkdir(scientificDir,{recursive:true});
  await writeFile(resolve(scientificDir,'index.html'),renderDocument(scientificTemplate,{markup:renderToString(React.createElement(ScientificPage)),title:'Thermal analysis · Northlight',originalTitle:'<title>Northlight scientific workspace</title>'}));
  // Generic entries cannot render unknown routes; publish only actual records.
- const {rm}=await import('node:fs/promises');await rm(resolve(out,'index.html'));await rm(resolve(out,'dashboard.html'));await rm(resolve(out,'scientific.html'));
+ const {rm}=await import('node:fs/promises');await rm(resolve(out,'dashboard.html'));await rm(resolve(out,'scientific.html'));
  console.log(`${family}: prerendered ${pages.length} content routes, three dashboards, a scientific workspace and an index at ${base}`);
 } finally {await server.close();}
