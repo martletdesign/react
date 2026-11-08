@@ -1,0 +1,327 @@
+{
+  "sourceRepository": "martletdesign/jekyll",
+  "sourceCommit": "e2d24d65b34d73d5f02ec0bf3814a94f34043ade",
+  "sourcePolicy": "Jekyll canonical composition and approved responsive imagery, reused as source styles/assets; native framework templates, never copied rendered HTML.",
+  "files": [
+    {
+      "path": "assets/css/examples-family.css",
+      "sha256": "3f3fc0f2985b292a8bfd57b836ecaf757d8b4a938a540259fc6bbb72df0d7c73",
+      "bytes": 10310
+    },
+    {
+      "path": "assets/css/examples.css",
+      "sha256": "130f757f8399a227b3287ab8c50f740a75a0046d3d5fc464f23a65836a89502b",
+      "bytes": 11362
+    },
+    {
+      "path": "assets/css/fonts.css",
+      "sha256": "80f766b73961542249d0cd82917d72ad65a9d869cfbb1566daeba5caba56560f",
+      "bytes": 13542
+    },
+    {
+      "path": "assets/css/jekyll.css",
+      "sha256": "f4bc4d0cae31d24058cc42c74554e1b93a81f3bcea29eb16c385f84c236b9f58",
+      "bytes": 25408
+    },
+    {
+      "path": "assets/css/shell.css",
+      "sha256": "d5cf12b35bac7b01cfb2c0298102454309fe979e19584c00490a21c93d500f45",
+      "bytes": 89103
+    },
+    {
+      "path": "assets/fonts/cambo-LICENSE.txt",
+      "sha256": "faa8e62c49fffe3e86168db72430c490279d1341b724da47c535f04ebf2c02f2",
+      "bytes": 4473
+    },
+    {
+      "path": "assets/fonts/cambo-latin-400-normal.8g9ZlP0h.woff2",
+      "sha256": "eead0ca3048c44e7ecd8302e903c282bc4041155198703ab7c0078cca94b76ab",
+      "bytes": 9628
+    },
+    {
+      "path": "assets/fonts/cambo-latin-400-normal.PIAh7sIB.woff",
+      "sha256": "aceecf8fd5f9fe7abf56f1d4644d6897cca8be8f5ec5d368fefc39010756447a",
+      "bytes": 13068
+    },
+    {
+      "path": "assets/fonts/cinzel-LICENSE.txt",
+      "sha256": "f5a242cf68ad6ebd0603b3359a74c593ca080318a681035be5296ba2c6b04ae6",
+      "bytes": 4382
+    },
+    {
+      "path": "assets/fonts/cinzel-latin-400-normal.C8jUSQqm.woff",
+      "sha256": "99c6477f06f0c717d31f2bb41013582c347be65366179d5726d107ad908ff3b0",
+      "bytes": 16616
+    },
+    {
+      "path": "assets/fonts/cinzel-latin-400-normal.DnUIPmzd.woff2",
+      "sha256": "b873cdd90d6bd9ca4793c805b4175abfae00b3611ee8afccf63067133dcf1217",
+      "bytes": 14128
+    },
+    {
+      "path": "assets/fonts/cinzel-latin-600-normal.CH_LB4su.woff",
+      "sha256": "7cffb40d1c02861fd0f2fedf9446f36b9d38ce312c723927667ebcffc8690894",
+      "bytes": 17504
+    },
+    {
+      "path": "assets/fonts/cinzel-latin-600-normal.Dd5YO2UX.woff2",
+      "sha256": "61efc27ceb7d08bb841652fa8979c0b6833b92548b7f9544c07968a6c02f28e4",
+      "bytes": 15204
+    },
+    {
+      "path": "assets/fonts/cinzel-latin-700-normal.C-gK7hA8.woff",
+      "sha256": "83ea41e439a253b4d436cc895d07a0d47f714c4816a23e86df35c442eddffafb",
+      "bytes": 17524
+    },
+    {
+      "path": "assets/fonts/cinzel-latin-700-normal.Dkw14w9r.woff2",
+      "sha256": "8efa224fe70fef188a39c095e218b81fd31061809f2752537e33a9ec7b9c2263",
+      "bytes": 15184
+    },
+    {
+      "path": "assets/fonts/cinzel-latin-800-normal.69OYDlL6.woff",
+      "sha256": "f4e0646d7daff85da7c61990ca928b80b857d110ca5495e274dccb2105de407c",
+      "bytes": 17536
+    },
+    {
+      "path": "assets/fonts/cinzel-latin-800-normal.CwkMVn6z.woff2",
+      "sha256": "47fd3e35a90ae2198df04cdc9f036011f1b58f6e97878de7aa9258c35f6ac665",
+      "bytes": 15260
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-LICENSE.txt",
+      "sha256": "23b0a9d0c6d3f140a0b77e483c5cfa6bba574325ef5cb189ed9f2fec4884533f",
+      "bytes": 5299
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-400-italic.66oory27.woff",
+      "sha256": "45f28e1017f6b45430614ec8a892d5b3e046870f3ecb3a26b1c99c1e5a183877",
+      "bytes": 14992
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-400-italic.BqAiT5Ww.woff2",
+      "sha256": "0840095faae86403735a8c04014b72cb29e7923646b222b360b7e8252932e4e3",
+      "bytes": 16448
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-400-normal.CvHOgSBP.woff",
+      "sha256": "328d50b6ece9ca25c46eea3e885ba497f6237f2fb84ef7b92f88e14a1a25e381",
+      "bytes": 13144
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-400-normal.DMJ8VG8y.woff2",
+      "sha256": "08949f728dc52d528e69b1667d15c89a5686a4ee9a296ff90983985f99c380f7",
+      "bytes": 14708
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-500-italic.As4cCeDr.woff2",
+      "sha256": "528cc360f6e6f5210526a33b6ed8f2c37084bd0c73b918f25a55f48b40c4ac52",
+      "bytes": 16484
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-500-italic.C4MYrNFW.woff",
+      "sha256": "a0de2addd5dcd80502962b65ecfedadd7d35e7df72d4e5b30a34325188f0d0a2",
+      "bytes": 15072
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-500-normal.CB9ihrfo.woff",
+      "sha256": "09f018c58556e5801ecc49d5b5275dcff4c73311c2af6b88e31c51d76d076a9d",
+      "bytes": 13156
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-500-normal.DSY6xOcd.woff2",
+      "sha256": "01d285447409c8a588692162439a038b8cbd7871309ee20267b0d2d91c6e8e22",
+      "bytes": 14888
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-600-italic.DYu2LnOQ.woff",
+      "sha256": "9ab7e2e790ae597f220deebd56d09c6ed891e0447d37582913abd13bbbcea1c4",
+      "bytes": 15060
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-600-italic.DrfJ59vG.woff2",
+      "sha256": "42a8ca72a19c5ee1612ac3e35f52d08f34a09856c9466dc87a21101ad230ed6b",
+      "bytes": 17356
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-600-normal.BgSNZQsw.woff2",
+      "sha256": "0d1f0b8d0722224e32e9f28261bdc86c79115be73444ae5eceb73976a1bcdf83",
+      "bytes": 15620
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-600-normal.DWFSQ4vo.woff",
+      "sha256": "cb96282f22c6f19112856fd6e0b34e2baefaf4ca6551e851d58c5ab0aabcd2be",
+      "bytes": 13208
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-700-italic.DHuxH1Z4.woff",
+      "sha256": "fc59060a8ece992f30b46130e08cbdd3f6ee25f6d30f7f9213a07a1188a53887",
+      "bytes": 14964
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-700-italic.J6kahdQd.woff2",
+      "sha256": "2bb0d4c82652472446ed1a5a89a0553f2db1e4ea17cbda66a45e690899d83e91",
+      "bytes": 16540
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-700-normal.7sUh57Bg.woff2",
+      "sha256": "4f84d86cfd060f4ded334358ff8a4c81d4db2ed5addd568359d693f44a87765a",
+      "bytes": 14908
+    },
+    {
+      "path": "assets/fonts/ibm-plex-mono-latin-700-normal.CNHXzs6v.woff",
+      "sha256": "595e0cbaa671f5276f5fdcac6113c30b2386f247f61cb42fc81f5096631a51e4",
+      "bytes": 13212
+    },
+    {
+      "path": "assets/fonts/lato-LICENSE.txt",
+      "sha256": "9648253641ec1d1f8ba2fbe8997909f7bfc48cc38537946f6272321788465b84",
+      "bytes": 6074
+    },
+    {
+      "path": "assets/fonts/lato-latin-400-italic.DL5fBv-7.woff",
+      "sha256": "387834b6bd2d74b8598383709521ddd04f4ef1ec8c6f80ac2cba8ddae82f996b",
+      "bytes": 18588
+    },
+    {
+      "path": "assets/fonts/lato-latin-400-italic.Dc0B1559.woff2",
+      "sha256": "bca1d88ada544d9c80872d4da27133fab6d347361fa26e932b47ec9559088fd0",
+      "bytes": 24408
+    },
+    {
+      "path": "assets/fonts/lato-latin-400-normal.B11PyLys.woff",
+      "sha256": "f55abc76e10cc86d799a7189e64e3c6e4cc6ced19b2474b1852a808be46232a8",
+      "bytes": 17452
+    },
+    {
+      "path": "assets/fonts/lato-latin-400-normal.BEhtfm5r.woff2",
+      "sha256": "918b7dc3e2e2d015c16ce08b57bcb64d2253bafc1707658f361e72865498e537",
+      "bytes": 23580
+    },
+    {
+      "path": "assets/fonts/lato-latin-700-italic.Db_2buKa.woff",
+      "sha256": "81e17cb70bfa6bf1d3021167fd0a5040f6cfde267bd4ec4a46f32228c66c5fbe",
+      "bytes": 18564
+    },
+    {
+      "path": "assets/fonts/lato-latin-700-italic.Jzc1y7Yy.woff2",
+      "sha256": "6c84348296ebe2e2a0830c3962eb02156419d9bc76371c2eadaf7329d827d550",
+      "bytes": 24448
+    },
+    {
+      "path": "assets/fonts/lato-latin-700-normal.BUGMgin4.woff2",
+      "sha256": "c447dd7677b419db7b21dbdfc6277c7816a913ffda76fd2e52702df538de0e49",
+      "bytes": 23040
+    },
+    {
+      "path": "assets/fonts/lato-latin-700-normal.DAdL7O4w.woff",
+      "sha256": "98149dd994189af57b3867d308874c7acb05edd3351663ccca860b87044479db",
+      "bytes": 17624
+    },
+    {
+      "path": "assets/images/heroes/PROVENANCE.json",
+      "sha256": "763cf58cd8bebad644737f76a45e26f470968c942a997388d42b268a3fbcde2a",
+      "bytes": 2466
+    },
+    {
+      "path": "assets/images/heroes/martlet-hero-1440.webp",
+      "sha256": "0135fb44890f4bf5092afa2c798fa7337800cfb021f1622d876733072181c877",
+      "bytes": 29386
+    },
+    {
+      "path": "assets/images/heroes/martlet-hero-1920.webp",
+      "sha256": "d726af09b175d474cffcfb1152c2b6b69e04e5b51ed85244396b39965c27e2e3",
+      "bytes": 42644
+    },
+    {
+      "path": "assets/images/heroes/martlet-hero-2172.webp",
+      "sha256": "325691c8e1468c19b809242f4b6b8cd49780afecbbf00800b1b8567efd74c55d",
+      "bytes": 50988
+    },
+    {
+      "path": "assets/images/heroes/martlet-hero-640.webp",
+      "sha256": "98a0b5248a74203e32136301df707302d1274e5b3110a4b201ad5420edeaab7c",
+      "bytes": 10572
+    },
+    {
+      "path": "assets/images/heroes/martlet-hero-960.webp",
+      "sha256": "a7c0713f8fa2faa1a10dd382c9d7c4bfea5a149a30def1e2fb29f6f2c158acf8",
+      "bytes": 17284
+    },
+    {
+      "path": "assets/images/heroes/martlet-hero-master.png",
+      "sha256": "2ab6f3b4ba63d7fd3ba51a8cd3db7e5782de1bf03eb31b0ec3b1fd44f100959a",
+      "bytes": 1665260
+    },
+    {
+      "path": "assets/images/sections/martlet-architecture-1440.webp",
+      "sha256": "151a50012cc08e6d2dc7e5b4b5c3b254a8458834cab4bff02febb3a70e2be7d4",
+      "bytes": 52894
+    },
+    {
+      "path": "assets/images/sections/martlet-architecture-1920.webp",
+      "sha256": "0f094010bd7cfba7e059426b435838c245421c2da0c5cc404e681351edd70555",
+      "bytes": 83296
+    },
+    {
+      "path": "assets/images/sections/martlet-architecture-640.webp",
+      "sha256": "941019a81be0d05f6bc801f7399ba598e0b9abecd40b66f2abbc5764fe09daed",
+      "bytes": 15374
+    },
+    {
+      "path": "assets/images/sections/martlet-architecture-960.webp",
+      "sha256": "7b4df4898df1df77ee72f37e210572dee342f73d429a64e6b5f24a8984c5f556",
+      "bytes": 28102
+    },
+    {
+      "path": "assets/images/sections/martlet-library-1440.webp",
+      "sha256": "c60095f495441e00c56ee63033ad1fd9fcbb3ddee1f72c1737534b99cb863a01",
+      "bytes": 237902
+    },
+    {
+      "path": "assets/images/sections/martlet-library-1920.webp",
+      "sha256": "0c3697022340be7cda02f96e2df2188ee78d32c030b667953f415a0123670c1d",
+      "bytes": 389952
+    },
+    {
+      "path": "assets/images/sections/martlet-library-640.webp",
+      "sha256": "bd8bb78b99b9d912b3204e2118d99e5fb3c28f5e1b4b2dab486f5e9167cc16da",
+      "bytes": 54316
+    },
+    {
+      "path": "assets/images/sections/martlet-library-960.webp",
+      "sha256": "f6c09ca5e1c5e4f23f3aba64e0c348c7c290c2fc0543135131ebe70c8f31272c",
+      "bytes": 116570
+    },
+    {
+      "path": "assets/images/sections/martlet-manuscript-1440.webp",
+      "sha256": "dd19de2203bea71645e68a35c2272dade46e56efedc023a98dc0a9b8db14deb5",
+      "bytes": 89790
+    },
+    {
+      "path": "assets/images/sections/martlet-manuscript-1920.webp",
+      "sha256": "23be48a709d1b837d7856c398657a14f9b88ccfd443ee8def53b4956680798dd",
+      "bytes": 144182
+    },
+    {
+      "path": "assets/images/sections/martlet-manuscript-640.webp",
+      "sha256": "dabe04f4d61a63f4afde56e1c49c67476703a020f75ea265143ac61645967ef7",
+      "bytes": 22722
+    },
+    {
+      "path": "assets/images/sections/martlet-manuscript-960.webp",
+      "sha256": "0db48a82e3ac83ac71857e59d1f89ddb7412e32fe967b216b454372fe68e5077",
+      "bytes": 46176
+    },
+    {
+      "path": "assets/mark.svg",
+      "sha256": "eaec6dce2e743b145f99dc4331c3c7fa9431280b53b84e688d89e24117354927",
+      "bytes": 20746
+    },
+    {
+      "path": "assets/owner.svg",
+      "sha256": "05c66bb02e8ec8a2277a452a5f3728362c7ea7f087ee19126230d9d1d114423a",
+      "bytes": 36757
+    }
+  ]
+}
