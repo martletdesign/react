@@ -1,0 +1,60 @@
+name: Automatically publish accepted React version
+on:
+  workflow_run:
+    workflows: [Verify standalone package]
+    branches: [main]
+    types: [completed]
+permissions:
+  contents: read
+concurrency:
+  group: react-automatic-publication-${{ github.repository }}
+  cancel-in-progress: true
+jobs:
+  dispatch:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: write
+    env:
+      APPROVED_SHA: ${{ github.event.workflow_run.head_sha }}
+      REF_PROTECTED: ${{ github.ref_protected }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - name: Verify successful current main and registry version identity
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/automatic-release.mjs plan
+      - if: steps.plan.outputs.publish == 'true'
+        run: npm install --global npm@11.15.0 --ignore-scripts
+      - name: Prepare the existing normalized archive from accepted source
+        if: steps.plan.outputs.publish == 'true'
+        timeout-minutes: 8
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir "$RUNNER_TEMP/react-src" "$RUNNER_TEMP/react-out"
+          git archive HEAD | tar --same-permissions -x -C "$RUNNER_TEMP/react-src"
+          node -e 'const fs=require("fs"),p=process.argv[1],v=JSON.parse(fs.readFileSync(p));if(v.private!==true)process.exit(1);v.private=false;fs.writeFileSync(p,JSON.stringify(v,null,2)+"\n")' "$RUNNER_TEMP/react-src/package.json"
+          (cd "$RUNNER_TEMP/react-src" && npm ci --ignore-scripts --no-audit --no-fund && npm run build && node scripts/normalize-package-modes.mjs . && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/react-out")
+          node scripts/tag-release-cli.mjs inspect "$RUNNER_TEMP/react-out/martlet-react-${{ steps.plan.outputs.version }}.tgz"
+      - name: Recheck source and dispatch the same trusted publisher
+        if: steps.plan.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/automatic-release.mjs dispatch "$RUNNER_TEMP/react-out/martlet-react-${{ steps.plan.outputs.version }}.tgz"

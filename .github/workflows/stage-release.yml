@@ -8,6 +8,12 @@ on:
       artifact_sha256:
         description: Independently reviewed SHA256 of the isolated publishable archive
         required: true
+      publish_mode:
+        description: Stage for separate approval, or publish immediately with trusted OIDC
+        type: choice
+        options: [stage, publish]
+        default: stage
+        required: true
       distribution_tag:
         type: choice
         options: [next, latest]
@@ -62,13 +68,50 @@ jobs:
           (cd "$RUNNER_TEMP/react-src" && npm ci --ignore-scripts && npm run build && node scripts/normalize-package-modes.mjs . && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/react-out")
           node scripts/tag-release-cli.mjs inspect "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz"
           printf '%s  %s\n' "$EXPECTED_SHA256" "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" | sha256sum --check
-      - name: Recheck source and registry immediately before staging
-        run: node scripts/stage-release-preflight.mjs
-      - name: Stage reviewed archive for separate npm approval
+      - name: Recheck source, immutable tag identity and registry immediately before publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/automatic-release.mjs tag-available
+          node scripts/stage-release-preflight.mjs
+      - name: Publish or stage the exact reviewed archive
         env:
           NPM_TAG: ${{ inputs.distribution_tag }}
+          PUBLISH_MODE: ${{ inputs.publish_mode }}
         shell: bash
         run: |
           set -euo pipefail
           [[ "$NPM_TAG" = next || "$NPM_TAG" = latest ]]
-          npm stage publish "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" --access public --tag "$NPM_TAG" --provenance
+          if [[ "$PUBLISH_MODE" = publish ]]; then
+            npm publish "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" --access public --tag "$NPM_TAG" --provenance
+          elif [[ "$PUBLISH_MODE" = stage ]]; then
+            npm stage publish "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" --access public --tag "$NPM_TAG" --provenance
+          else
+            echo 'Unknown publication mode' >&2
+            exit 1
+          fi
+  complete:
+    if: needs.stage.result == 'success' && inputs.publish_mode == 'publish'
+    needs: stage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: write
+    env:
+      APPROVED_SHA: ${{ inputs.source_sha }}
+      EXPECTED_SHA256: ${{ inputs.artifact_sha256 }}
+      REF_PROTECTED: ${{ github.ref_protected }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - name: Verify published bytes, preserve the exact tag and complete source release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/automatic-release.mjs complete
