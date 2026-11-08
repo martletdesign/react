@@ -1,5 +1,6 @@
 name: Complete published React source release
 on:
+  workflow_dispatch:
   push:
     tags: ['v*']
 permissions:
