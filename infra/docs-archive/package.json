@@ -1,1 +1,0 @@
-{"name":"react-docs-archive-rehearsal","version":"0.0.0","private":true,"type":"module","scripts":{"test":"node smoke.mjs"},"devDependencies":{"miniflare":"4.20260730.0"}}

@@ -1,9 +1,0 @@
-{
-  "schemaVersion": 1,
-  "mode": "static-reference",
-  "advancedArchive": {
-    "enabled": false,
-    "administratorImmutable": false,
-    "reason": "Worker-only write isolation and independent anti-rollback authority are not verified; immutable archive publication remains gated."
-  }
-}

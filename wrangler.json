@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "martletdesign-react-reference",
+  "compatibility_date": "2026-11-09",
+  "assets": {
+    "directory": "./examples/react-catalog/dist/martlet",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "previews": {}
+}

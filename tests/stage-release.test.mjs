@@ -3,17 +3,16 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {validateStage,verifyStagedProvenance} from '../scripts/stage-release-guard.mjs';
-import {pkg,lock,pin,delivery} from './fixtures/release-source.mjs';
+import {pkg,lock,pin} from './fixtures/release-source.mjs';
 const sha='a'.repeat(40),repository=pkg.repository.url.replace('git+https://github.com/','').replace('.git','');
-const good={pkg,lock,pin,delivery,repository,expectedRepository:repository,ref:'refs/heads/main',protectedRef:'true',sourceSha:sha,eventSha:sha,checkoutSha:sha,remoteMainSha:sha};
+const good={pkg,lock,pin,repository,expectedRepository:repository,ref:'refs/heads/main',protectedRef:'true',sourceSha:sha,eventSha:sha,checkoutSha:sha,remoteMainSha:sha};
 test('staging rejects unprotected, stale or substituted source authority',()=>{
  assert.equal(validateStage(good).name,pkg.name);
  for(const changes of [{ref:'refs/heads/develop'},{protectedRef:'false'},{eventSha:'b'.repeat(40)},{remoteMainSha:'b'.repeat(40)},{repository:'untrusted/repo'}])assert.throws(()=>validateStage({...good,...changes}));
 });
-test('staging rejects fixture dependency locks and an unverified advanced archive switch',()=>{
+test('staging rejects fixture dependency locks and mismatched registry identity',()=>{
  const changed=structuredClone(lock);changed.packages['node_modules/'+pin.core.name].resolved='file:../fixture.tgz';
  assert.throws(()=>validateStage({...good,lock:changed}));
- assert.throws(()=>validateStage({...good,delivery:{...delivery,advancedArchive:{enabled:true,administratorImmutable:false}}}));
  assert.throws(()=>validateStage({...good,pin:{...pin,core:{...pin.core,integrity:'wrong'}}}));
 });
 

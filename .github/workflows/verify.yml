@@ -20,5 +20,9 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm test
+      - run: npm run build:gallery && node scripts/check-gallery.mjs
+      - run: npx wrangler deploy --dry-run
+        env:
+          WRANGLER_SEND_METRICS: "false"
       - run: node scripts/check-published.mjs
       - run: npm pack --ignore-scripts
