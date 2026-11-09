@@ -1,5 +1,4 @@
-import '../../scripts/sync-core-styles.mjs';
-import {build,createServer} from 'vite';
+import {createServer} from 'vite';
 import {validBase} from './src/base.mjs';
 import {renderToString} from 'react-dom/server';
 import React from 'react';
@@ -11,7 +10,7 @@ import {renderMarkdown} from '../page-archetypes/lib/markdown.mjs';
 import {peerDashboardURL} from './src/dashboard/peer.mjs';
 import {renderDocument} from './src/template.mjs';
 import {pageDataElement} from './src/page-data.mjs';
-const family=process.env.NIGHTJAR_FAMILY, base=process.env.NIGHTJAR_BASE || '/';
+export async function prerender({family,base,outDir}) {
 if(!['martlet','krigsvold'].includes(family)||!validBase(base))throw Error('Provide a family and an absolute directory base');
 const root=resolve('examples/react-catalog'),configFile=resolve(root,'vite.config.mjs');
 peerDashboardURL(process.env.NIGHTJAR_PEER_URL,'analytics');
@@ -19,14 +18,13 @@ peerDashboardURL(process.env.NIGHTJAR_PEER_URL,'analytics');
 // Other records use raw HTML disabled. This is not an untrusted ingestion API.
 const rendered={};
 for(const page of catalog.pages.filter(item=>selected.includes(item.id))) for(const section of page.sections) if(section.body) rendered[`${page.id}-${section.id}`]=renderMarkdown(section.body,base,{fixtureMarkup:page.id==='stress-test',docId:`${page.id}-${section.id}`});
-await build({configFile,mode:family});
-const server=await createServer({configFile,mode:family,server:{middlewareMode:true,hmr:false,watch:null},appType:'custom'});
+const server=await createServer({configFile,mode:family,base,server:{middlewareMode:true,hmr:false,watch:null},appType:'custom'});
 try {
  const {App}=await server.ssrLoadModule('/src/app.tsx');
  const {pages,validatePages,requiresSpecial}=await server.ssrLoadModule('/src/pages.ts');
  const {renderSpecial}=await server.ssrLoadModule('/src/special.tsx');
  validatePages();
- const out=resolve(root,'dist',family),template=await readFile(resolve(out,'index.html'),'utf8'),dashboardTemplate=await readFile(resolve(out,'dashboard.html'),'utf8'),scientificTemplate=await readFile(resolve(out,'scientific.html'),'utf8');
+ const out=outDir,template=await readFile(resolve(out,'index.html'),'utf8'),dashboardTemplate=await readFile(resolve(out,'dashboard.html'),'utf8'),scientificTemplate=await readFile(resolve(out,'scientific.html'),'utf8');
  const manifest=JSON.parse(await readFile(resolve(out,'.vite/manifest.json'),'utf8'));
  const {DashboardFrame}=await server.ssrLoadModule('/src/dashboard/DashboardFrame.tsx');
  const entries=catalog.pages.map(({id,title,summary,category})=>({id,title,summary,category,available:selected.includes(id)}));
@@ -68,3 +66,5 @@ try {
  const {rm}=await import('node:fs/promises');await rm(resolve(out,'dashboard.html'));await rm(resolve(out,'scientific.html'));
  console.log(`${family}: prerendered ${pages.length} content routes, three dashboards, a scientific workspace and an index at ${base}`);
 } finally {await server.close();}
+
+}

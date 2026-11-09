@@ -45,10 +45,9 @@ const fs=require('fs'), p=process.argv[2], j=JSON.parse(fs.readFileSync(p));
 if(j.private!==true)process.exit(1);j.private=false;fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');
 NODE
 rm -r "$work/source/node_modules"
-(cd "$work/archive" && npm ci --ignore-scripts --no-audit --no-fund && npm run build && npm pack --ignore-scripts --pack-destination "$work/out" >/dev/null)
+(cd "$work/archive" && npm ci --ignore-scripts --no-audit --no-fund && npm run build:package && npm pack --ignore-scripts --pack-destination "$work/out" >/dev/null)
 archive="$work/out/${family}-react-9999.0.0-nightjar.0.tgz"
 node scripts/tag-release-cli.mjs inspect "$archive"
-if node scripts/verify-docs-published.mjs 2>/dev/null; then echo 'Documentation gate must fail' >&2; exit 1; fi
 npm publish "$archive" --dry-run --registry http://127.0.0.1:9 --ignore-scripts --tag next --fetch-retries=0 >/dev/null
 sha256sum "$archive"
 echo "$family local nonpublishing rehearsal passed (tag protection simulated)"

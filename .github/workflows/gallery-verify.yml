@@ -26,7 +26,7 @@ jobs:
           node-version: '24.19.0'
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm run build && npm run build:gallery
+      - run: npm run build
       - run: node scripts/check-gallery.mjs
       - run: npx playwright install --with-deps ${{ env.DESIGN_BROWSER }}
         timeout-minutes: 5
@@ -55,7 +55,7 @@ jobs:
           node-version: '24.19.0'
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm run build && npm run build:gallery
+      - run: npm run build
       - run: node scripts/check-gallery.mjs
       - run: npx playwright install --with-deps ${{ env.DESIGN_BROWSER }}
         timeout-minutes: 5

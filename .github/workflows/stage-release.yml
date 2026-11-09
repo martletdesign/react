@@ -65,7 +65,7 @@ jobs:
           mkdir "$RUNNER_TEMP/react-src" "$RUNNER_TEMP/react-out"
           git archive HEAD | tar -x -C "$RUNNER_TEMP/react-src"
           node -e 'const fs=require("fs"),p=process.argv[1],v=JSON.parse(fs.readFileSync(p));if(v.private!==true)process.exit(1);v.private=false;fs.writeFileSync(p,JSON.stringify(v,null,2)+"\n")' "$RUNNER_TEMP/react-src/package.json"
-          (cd "$RUNNER_TEMP/react-src" && npm ci --ignore-scripts && npm run build && node scripts/normalize-package-modes.mjs . && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/react-out")
+          (cd "$RUNNER_TEMP/react-src" && npm ci --ignore-scripts && npm run build:package && node scripts/normalize-package-modes.mjs . && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/react-out")
           node scripts/tag-release-cli.mjs inspect "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz"
           printf '%s  %s\n' "$EXPECTED_SHA256" "$RUNNER_TEMP/react-out/martlet-react-${{ steps.identity.outputs.version }}.tgz" | sha256sum --check
       - name: Recheck source, immutable tag identity and registry immediately before publication
