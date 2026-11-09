@@ -28,7 +28,7 @@
     "react": "^19.0.0"
   },
   "dependencies": {
-    "@martlet/core": "github:martletdesign/core#559dd8659b47cf25a0c06cee6c86fd91b541679c"
+    "@martlet/core": "github:martletdesign/core#3a3ad604632ac31e6b9a845ec0fe63675233b2f8"
   },
   "scripts": {
     "build": "npm run build:package && npm run build:gallery",
