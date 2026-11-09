@@ -1,0 +1,10 @@
+{
+  "package": "@martlet/core",
+  "version": "2.3.0",
+  "source": "github:martletdesign/core#559dd8659b47cf25a0c06cee6c86fd91b541679c",
+  "files": {
+    "reference.css": "e7529cefba4c123d53758318730d0ad31bf651696948d7ed72aedc1872e47a79",
+    "fonts.css": "80f766b73961542249d0cd82917d72ad65a9d869cfbb1566daeba5caba56560f",
+    "react-reference.css": "8fa3ebff392257036cc6ace54f9ddca829030d3ce9bb93f2b5dfa80fa4b944ab"
+  }
+}

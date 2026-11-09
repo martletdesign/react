@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {releaseVersion, validateIdentity, productionCommit, registryState, verifyArchive, verifyProvenance} from '../scripts/tag-release-guard.mjs';
-const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url)));
-const lock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url)));
+import {pkg,lock,developmentPkg,developmentLock} from './fixtures/release-source.mjs';
 const repository = pkg.repository.url.replace(/^git\+https:\/\/github.com\//, '').replace(/\.git$/, '');
 const input = {tag:`v${pkg.version}`,pkg,source:{version:pkg.version},lock,repository,expectedRepository:repository,expectedName:pkg.name};
 test('version identity and exact core dependency fail closed', () => {
@@ -40,4 +39,8 @@ test('archive identity, bytes and integrity are mandatory', () => {
   assert.equal(verifyArchive({...data,remote:Buffer.from('modified')}),false);
   assert.equal(verifyArchive({...data,metadata:{...data.metadata,name:'other'}}),false);
   assert.equal(verifyProvenance({audit:{invalid:[],missing:[],verified:[]},archive,name:pkg.name,version:pkg.version}),false);
+});
+
+test('development Core commits are not publishable package sources',()=>{
+ if(Object.values(developmentPkg.dependencies).some(value=>value.startsWith('github:'))) assert.throws(()=>validateIdentity({...input,pkg:developmentPkg,lock:developmentLock}),/published core dependency/);
 });

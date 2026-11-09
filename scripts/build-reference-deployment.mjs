@@ -41,7 +41,7 @@ try {
   snapshots.push({base,version:pkg.version,manifestSha256:digest,files:manifest.files.length,sourceCommit:manifest.source.commit});
  }
  if(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()!==commit)throw Error('Source moved during reference assembly');
- const provenance={schemaVersion:1,family,framework:'react',package:{name:pkg.name,version:pkg.version},source:{repository:family+'design/react',commit,tree},core:pin.core,delivery,snapshots};
+ const provenance={schemaVersion:1,family,framework:'react',package:{name:pkg.name,version:pkg.version},source:{repository:family+'design/react',commit,tree},core:pin.core,referenceCore:JSON.parse(await readFile('examples/react-catalog/public/assets/css/core-styles.json','utf8')),delivery,snapshots};
  await writeFile(join(output,'version.json'),JSON.stringify(provenance,null,2)+'\n');
  const artifact=validateArtifact({schemaVersion:1,family,framework:'react',source:provenance.source,files:await inventory(output)});
  await writeFile(join(output,'artifact.json'),JSON.stringify(artifact,null,2)+'\n');await verifyLocal(output,artifact);

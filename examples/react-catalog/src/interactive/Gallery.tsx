@@ -1,7 +1,6 @@
 import {useEffect,useId,useRef,useState,type MouseEvent} from 'react';
 import {Button,family} from 'catalog-family';
 import {exampleImage} from '../assets';
-import './gallery.css';
 export type GalleryItem={title:string;image:string;alt:string;caption:string};
 export type GallerySection={id:string;title:string;items:GalleryItem[]};
 export function Gallery({section}:{section:GallerySection}) {

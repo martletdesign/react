@@ -38,7 +38,7 @@ test('a pinned local snapshot is created once, and older archives cannot be repl
 test('documentation pins the matching independent core release',async()=>{
   const pkg=JSON.parse(await readFile('package.json','utf8')),pin=JSON.parse(await readFile('docs-release-lock.json','utf8'));
   assert.equal(pkg.name,`@${pin.family}/react`);assert.equal(pkg.private,true);
-  assert.equal(pin.core.name,`@${pin.family}/core`);assert.equal(pkg.dependencies[pin.core.name],pin.core.version);
+  assert.equal(pin.core.name,`@${pin.family}/core`);assert.ok(pkg.dependencies[pin.core.name]===pin.core.version || new RegExp('^github:'+pin.family+'design/core#[a-f0-9]{40}$').test(pkg.dependencies[pin.core.name]),'Development uses an immutable Core commit; archives retain the release pin');
   assert.equal(pkg.dependencies[`@${pin.family}/theme`],undefined);
   assert.match(pin.core.version,/^\d+\.\d+\.\d+$/);assert.match(pin.core.integrity,/^sha512-[A-Za-z0-9+/]{86}==$/);
 });

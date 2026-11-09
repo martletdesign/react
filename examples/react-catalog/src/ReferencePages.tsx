@@ -1,7 +1,7 @@
 import {SourceShell,type ReferencePage} from './shell/SourceShell';
 const base=import.meta.env.BASE_URL.replace(/\/$/,'');const href=(path:string)=>`${base}${path}`;
 const pages:Record<string,ReferencePage>={
- 'site-home':{id:'site-home',title:'Martlet, in plain sight.',eyebrow:'The React reference',summary:'The same shell. Native React components, real examples, and nothing hiding the design.'},
+ 'site-home':{id:'site-home',title:'Martlet for React.',eyebrow:'The React reference',summary:'The same shell. Native React components, real examples, and nothing hiding the design.'},
  language:{id:'language',title:'A language worth keeping.',eyebrow:'Martlet · Principles',summary:'A wide document tests the shared masthead, index, reading measure, and typography.'},
  journal:{id:'journal',title:'Notes from the workshop.',eyebrow:'Journal',summary:'Reading, making, and keeping a design language coherent.'},
  setup:{id:'setup',title:'Make it your own.',eyebrow:'Template guide',summary:'Native React components, a canonical reference shell, and editable content.'},
