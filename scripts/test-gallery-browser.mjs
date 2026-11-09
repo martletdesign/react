@@ -64,6 +64,18 @@ try {
       await run('response.status', () => assert.equal(response.status(), 200, route));
       await run('heading', async () => assert.ok(await page.getByRole('heading', { level: 1 }).count(), route));
       await run('fonts.ready', () => waitForFonts(page));
+      if (js && route.includes('dashboard-')) {
+        await run('dashboard.shared-presentation', async () => {
+          await page.locator('main select:enabled').first().waitFor();
+          assert.equal(await page.locator('.site-footer').count(),0,'Dashboard ownership belongs in its navigation');
+          assert.equal(await page.locator('[style],style').count(),0,'Hydration must not introduce inline CSS');
+          const fields=await page.locator('main input:not([type=checkbox]):not([type=radio]),main select').evaluateAll(elements=>elements.map(e=>({height:e.getBoundingClientRect().height,color:getComputedStyle(e).color,background:getComputedStyle(e).backgroundColor,font:getComputedStyle(e).font})));
+          assert.ok(fields.length>=4);
+          assert.ok(fields.every(field=>Math.abs(field.height-fields[0].height)<.1),'Single-line input heights differ');
+          assert.ok(fields.every(field=>field.color===fields[0].color&&field.background===fields[0].background&&field.font===fields[0].font),'Field presentation differs within the dashboard');
+        });
+      }
+
       await run('reflow', async () => assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, route + ' reflow'));
       if (js && route === 'examples/article/') {
         await run('axe.analyze', async () => {
@@ -71,7 +83,7 @@ try {
           assert.deepEqual(a.violations.map(v => v.id), []);
         }, 45_000);
       }
-      if (js && /(?:search|dashboard-(?:administration|operations)|scientific-workspace)\/$/.test(route)) {
+      if (js && /(?:search|dashboard-(?:analytics|administration|operations)|scientific-workspace)\/$/.test(route)) {
         await run('hydration', () => page.locator('.source-shell[data-enhanced=true]').waitFor());
         for (const mode of ['light', 'dark']) {
           await run('appearance.' + mode, async () => {

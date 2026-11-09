@@ -1,3 +1,6 @@
+import {execFileSync} from 'node:child_process';
+execFileSync(process.execPath,['scripts/sync-core-styles.mjs','--check'],{stdio:'inherit'});
+import './check-style-ownership.mjs';
 import { readFile, access } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import assert from 'node:assert/strict';

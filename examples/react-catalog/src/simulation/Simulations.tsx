@@ -1,6 +1,5 @@
 import {useEffect,useId,useState} from 'react';
 import {exampleImage} from '../assets';
-import './simulation.css';
 
 type Viewpoint='coast'|'station'|'notebook';
 const views:Record<Viewpoint,{label:string;alt:string}>={

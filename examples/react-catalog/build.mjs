@@ -1,3 +1,4 @@
+import '../../scripts/sync-core-styles.mjs';
 import {build,createServer} from 'vite';
 import {validBase} from './src/base.mjs';
 import {renderToString} from 'react-dom/server';
@@ -39,7 +40,7 @@ try {
   const pageRendered=Object.fromEntries(page.sections.filter(section=>section.body).map(section=>[`${page.id}-${section.id}`,rendered[`${page.id}-${section.id}`]]));
   const data={id:page.id,page,rendered:pageRendered,entries:page.sections.some(section=>section.kind==='search')?entries:[],requiresSpecial:needsSpecial};
   const markup=renderToString(React.createElement(App,{data,...(needsSpecial?{special:renderSpecial}:{})}));
-  const css=needsSpecial?manifest['src/special.tsx']?.css:[];if(needsSpecial&&!css?.length)throw Error('Missing interactive stylesheet in build manifest');
+  const css=manifest['src/special.tsx']?.css||[];
   const styles=css.map(file=>`<link rel="stylesheet" crossorigin href="${base}${file}">`).join('');
   await writeFile(resolve(dir,'index.html'),renderDocument(template,{styles:styles+pageDataElement(data),markup,title:`${page.title} · Northlight`,originalTitle:'<title>Northlight examples</title>'}));
  }
@@ -47,7 +48,7 @@ try {
   const dir=resolve(out,id==='site-home'?'':id==='docs-versions'?'docs/versions':id);await mkdir(dir,{recursive:true});
   const data={id,page:null,rendered:{},entries:[],requiresSpecial:false};
   const markup=renderToString(React.createElement(App,{data}));
-  const titles={'site-home':'Martlet, in plain sight.',language:'A language worth keeping.',journal:'Notes from the workshop.',setup:'Make it your own.','image-credits':'Image credits.',docs:'React documentation.','docs-versions':'Documentation versions.'};
+  const titles={'site-home':'Martlet for React.',language:'A language worth keeping.',journal:'Notes from the workshop.',setup:'Make it your own.','image-credits':'Image credits.',docs:'React documentation.','docs-versions':'Documentation versions.'};
   await writeFile(resolve(dir,'index.html'),renderDocument(template,{styles:pageDataElement(data),markup,title:titles[id]+' · Martlet React',originalTitle:'<title>Northlight examples</title>'}));
  }
  const indexDir=resolve(out,'examples');await mkdir(indexDir,{recursive:true});
@@ -56,7 +57,7 @@ try {
  for(const [id,name] of dashboards){
   const module=await server.ssrLoadModule(`/src/dashboard/${name}.tsx`);const dir=resolve(indexDir,`dashboard-${id}`);await mkdir(dir,{recursive:true});
   const markup=renderToString(React.createElement(DashboardFrame,{current:id},React.createElement(module[name])));
-  const css=manifest[`src/dashboard/${name}.tsx`]?.css;if(!css?.length)throw Error(`Missing ${name} stylesheet in build manifest`);
+  const css=manifest[`src/dashboard/${name}.tsx`]?.css||[];
   const styles=css.map(file=>`<link rel="stylesheet" crossorigin href="${base}${file}">`).join('');
   await writeFile(resolve(dir,'index.html'),renderDocument(dashboardTemplate,{styles,markup,title:`${name} · Northlight`,originalTitle:'<title>Northlight dashboard</title>'}));
  }

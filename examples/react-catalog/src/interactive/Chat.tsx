@@ -1,6 +1,5 @@
 import {useEffect,useId,useRef,useState,type FormEvent} from 'react';
 import {Button} from 'catalog-family';
-import './workspace.css';
 const original=[{author:'Mara · Example message',text:'Could we review the conditions note before publishing?'},{author:'Rowan · Example message',text:'Yes. Keep the uncertainty visible in the account.'}];
 export function Chat(){
  const id=useId(),input=useRef<HTMLTextAreaElement>(null);

@@ -1,0 +1,76 @@
+.rg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr)); gap:1.5rem; }
+.react-gallery figure { margin:0; min-width:0; }
+.react-gallery img { display:block; width:100%; height:auto; }
+.rg-dialog { max-width:min(90vw,64rem); max-height:90vh; overflow:auto; }
+.rg-dialog figure { margin-block:1rem 0; }
+
+.react-workspace { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap:2rem; }
+.react-workspace > * { min-width:0; } .react-workspace label { display:block; font-weight:700; }
+.react-workspace input[type=search] { width:100%; max-width:100%; min-height:2.75rem; padding:.5rem; font:inherit; }
+.rw-records { padding:0; list-style:none; } .rw-records li { margin-block:1.5rem; } .rw-records li[hidden] { display:none; }
+.rw-actions { display:flex; flex-wrap:wrap; gap:.75rem; margin-block:1rem; }
+.rw-messages { padding-inline-start:1.5rem; } .rw-messages p { overflow-wrap:anywhere; white-space:pre-wrap; }
+
+.scientific-page { max-width:75rem; margin:2rem auto; padding:0 1rem 3rem; }
+
+.science-regions { display:grid; grid-template-columns:minmax(0,1fr); gap:2.5rem; overflow-wrap:anywhere; }
+.science-regions > section, .science-regions form, .science-regions fieldset { min-inline-size:0; }
+.science-regions form fieldset { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; }
+.science-regions figure { margin:1.5rem 0; }
+.science-regions svg { display:block; max-width:100%; width:30rem; height:auto; }
+.science-regions svg line { stroke:currentColor; stroke-width:1; }
+.science-regions svg polyline { fill:none; stroke:currentColor; stroke-width:2.5; }
+.science-errors { margin-block:1rem; }
+.science-errors:focus { outline:2px solid currentColor; outline-offset:3px; }
+.science-regions button { justify-self:start; min-inline-size:0; max-inline-size:100%; white-space:normal; overflow-wrap:anywhere; }
+@media (min-width:60rem) { .science-regions { grid-template-columns:minmax(15rem,1fr) minmax(0,1.5fr); align-items:start; } }
+
+.simulation-controls { display:grid; gap:.5rem; }
+.simulation figure { margin-inline:0; }
+.simulation figure img { max-width:100%; height:auto; }
+
+.recipe-cards {list-style:none; padding:0; display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:1.5rem}
+.recipe-cards h3,.recipe-listing h3 {margin-bottom:.3rem}
+.recipe-listing {list-style:none;padding:0}.recipe-listing li {margin-block:1.5rem}
+.recipe-meta {font-size:.875rem}.recipe-actions {list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:1rem}
+[data-example] section {overflow-wrap:anywhere}
+@media print {.recipe-listing [hidden] {display:list-item !important} nav[aria-label$=" pages"] {display:none}}
+.recipe-prose {overflow-wrap:anywhere}
+[data-example] figure {margin-inline:0}[data-example] figure img {max-width:100%;height:auto}
+
+.demo-fields {display:grid;gap:.5rem;min-width:0}.demo-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+
+/* Keep local form controls legible and responsive to the user's root text size. */
+.demo-fields :is(input:not([type=checkbox]),select,textarea) {font-size:1rem;min-width:0;max-width:100%;box-sizing:border-box}
+
+.recipe-action {text-decoration:none}
+.recipe-local-index { margin-block: 2rem; }
+.recipe-local-index p { font-weight: 700; }
+.recipe-local-index ol { list-style: none; padding: 0; }
+.recipe-local-index li { margin-block: .6rem; }
+@media print { .recipe-local-index { display:none !important; } }
+
+/* React's hydration root is transparent to the shared reference shell. */
+body { margin:0; }
+.source-shell { min-height:100dvh; min-width:0; }
+.source-shell > main { min-width:0; display:flow-root; }
+.example-cards, .example-actions { list-style:none; padding:0; }
+.example-root section { min-width:0; }
+.dash-app [hidden] { display:none !important; }
+.dash-app fieldset { border:0; padding:0; margin:0; min-width:0; }
+.dash-controls > label, .dash-editor-grid > label { display:flex !important; flex-direction:column; align-items:stretch; gap:.5rem; margin:0 !important; }
+.dash-controls > label > :is(input,select), .dash-editor-grid > label > :is(input,select) { flex:none; }
+.dash-controls .example-help { display:block; font-weight:400; }
+.dash-metric dd > p { font:.85rem/1.5 var(--dash-ui-font); }
+.dash-chart-hatch { fill:none; stroke:var(--dash-chart-secondary); stroke-width:3; }
+.dash-chart-threshold-label { fill:var(--dash-warning); font:13px var(--dash-ui-font); }
+.dash-app .example-table-scroll table { width:100%; }
+.dash-app .dash-sort { margin:0; }
+.dash-app .example-pagination { display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; }
+.dash-app .dash-panel > h2 { margin-top:0; }
+
+body.martlet.dashboard-page:has(.site-header[data-navigation-ready]:not(.is-reflowing)) { --dashboard-header-offset:calc(4.6rem + 1px); }
+.source-shell--dashboard > .site-header[data-navigation-ready]:not(.is-reflowing) + main { padding-top:calc(4.6rem + 1px); }
+.martlet .source-shell .editorial-content > :first-child { margin-block-start:0; }
+
+.dash-control-group label:not(.example-checkbox) { display:flex !important; flex-direction:column; align-items:stretch; gap:.5rem; margin:0 !important; }

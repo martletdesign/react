@@ -1,7 +1,6 @@
 import {useEffect,useId,useRef,useState,type FormEvent} from 'react';
 import {Button,DataTable,Field,TextInput} from 'catalog-family';
 import {thermalDefaults,thermalModel,thermalNumber,thermalCsv} from '../../../page-archetypes/jekyll/assets/js/thermal-model.mjs';
-import './workspace.css';
 
 type Input = {initial:string;ambient:string;timeConstant:string;duration:string};
 const fields: {key:keyof Input;label:string;hint:string}[] = [

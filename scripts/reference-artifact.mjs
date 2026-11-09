@@ -53,5 +53,9 @@ export function verifyReferenceIdentity({artifact,version,pkg,pin}) {
  assert.equal(artifact.family,family,'Artifact belongs to another family');
  assert.equal(artifact.source.repository,repository,'Artifact belongs to another repository');
  assert.deepEqual(version.package,{name:pkg.name,version:pkg.version},'Artifact package differs from local source');
- assert.deepEqual(version.core,pin.core,'Artifact Core differs from local source pin');
+ assert.deepEqual(version.core,pin.core,'Archived release Core differs from local source pin');
+ if(version.referenceCore || pkg.dependencies?.[pin.core.name]?.startsWith('github:')) {
+  assert.equal(version.referenceCore?.package,pin.core.name,'Reference Core belongs to another family');
+  assert.equal(version.referenceCore?.source,pkg.dependencies[pin.core.name],'Reference Core differs from working source');
+ }
 }

@@ -28,14 +28,16 @@
     "react": "^19.0.0"
   },
   "dependencies": {
-    "@martlet/core": "2.2.4"
+    "@martlet/core": "github:martletdesign/core#559dd8659b47cf25a0c06cee6c86fd91b541679c"
   },
   "scripts": {
     "build": "node build.mjs",
     "test": "npm run build && node --test tests/*.test.mjs",
     "test:browser": "DESIGN_FAMILY=martlet node tests/browser-check.mjs",
     "build:gallery": "NIGHTJAR_FAMILY=martlet node examples/react-catalog/build.mjs",
-    "build:reference": "node scripts/build-reference-deployment.mjs"
+    "build:reference": "node scripts/build-reference-deployment.mjs",
+    "styles:sync": "node scripts/sync-core-styles.mjs",
+    "styles:check": "node scripts/sync-core-styles.mjs --check"
   },
   "repository": {
     "type": "git",
@@ -47,16 +49,16 @@
     "provenance": true
   },
   "devDependencies": {
-    "@types/react": "19.3.0",
-    "react": "19.3.1",
-    "react-dom": "19.3.1",
-    "typescript": "7.0.2",
     "@axe-core/playwright": "4.11.1",
-    "playwright": "1.64.1",
+    "@types/react": "19.3.0",
     "esbuild": "0.27.4",
-    "vite": "8.3.5",
     "markdown-it": "14.3.3",
     "markdown-it-footnote": "4.0.0",
-    "sanitize-html": "2.18.1"
+    "playwright": "1.64.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "sanitize-html": "2.18.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.5"
   }
 }

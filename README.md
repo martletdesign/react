@@ -40,3 +40,9 @@ The repository remains `private:true` to prevent accidental local publication. O
 Reproduce publishable archives using npm 11.15.0: export the exact commit with `git archive`, change only the exported manifest to `private:false`, install and build there, run `node scripts/normalize-package-modes.mjs .`, then `npm pack --ignore-scripts`. The normalizer requires an isolated export and rejects symlinks. Verify the registry tarball and successful `npm audit signatures --json --include-attestations` output with `RELEASE_TAG=v0.2.1 APPROVED_SHA=<accepted-main-sha> node scripts/tag-release-cli.mjs verify-stage-provenance <audit.json> <archive.tgz>`.
 
 Acceptance follows the [ratified GitFlow policy](https://github.com/k3jph/design-workbench/blob/develop/docs/GITFLOW-ACCEPTANCE.md): one fast required `test` check, zero required human reviewers, advisory extended suites. Accepted `develop` and `main` authorize their respective deployments. Source and artifact identity checks do not reconstruct PR reviews or historical CI results.
+
+### Shared presentation
+
+Core owns all React presentation. `src/styles.css` is only a Core import. The reference build copies `reference.css`, `reference-fonts.css`, and the optional React anatomy adapter directly from Core, recording their hashes in `core-styles.json`. `reference.css` is the same file consumed by Astro and Jekyll. Change visual rules in Core, update the pinned dependency, and run `npm run styles:sync`; do not add page styles or inline CSS.
+
+The development reference can use an immutable Core commit without a package release. Versioned documentation continues to build from its published React tag and release dependency lock. Updating the development reference does not publish npm packages.
