@@ -46,3 +46,5 @@ Acceptance follows the [ratified GitFlow policy](https://github.com/k3jph/design
 Core owns all React presentation. `src/styles.css` is only a Core import. The reference build copies `reference.css`, `reference-fonts.css`, and the optional React anatomy adapter directly from Core, recording their hashes in `core-styles.json`. `reference.css` is the same file consumed by Astro and Jekyll. Change visual rules in Core, update the pinned dependency, and run `npm run styles:sync`; do not add page styles or inline CSS.
 
 The development reference can use an immutable Core commit without a package release. Earlier package documentation remains available in GitHub release tags. Updating the development reference does not publish npm packages.
+
+Equivalent reference examples target the same typography, spacing, dimensions, and responsive layout as Astro and Jekyll when content, viewport, and appearance mode match. React retains native components, hooks, and state ownership; framework choice does not introduce a separate visual treatment.
