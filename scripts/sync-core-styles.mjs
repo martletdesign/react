@@ -8,7 +8,7 @@ const require=createRequire(resolve(root,'package.json')),source=dirname(require
 const core=JSON.parse(await readFile(resolve(source,'package.json'),'utf8'));
 const directory=resolve(root,'examples/react-catalog/public/assets/css');await mkdir(directory,{recursive:true});
 const expected={};
-for(const [file,exportName] of Object.entries({'reference.css':'reference.css','fonts.css':'reference-fonts.css','react-reference.css':'react-reference.css'})){
+for(const [file,exportName] of Object.entries({'martlet.css':'martlet.css','fonts.css':'reference-fonts.css','react-reference.css':'react-reference.css'})){
  const bytes=await readFile(resolve(source,'dist',exportName));expected[file]=createHash('sha256').update(bytes).digest('hex');
  if(process.argv.includes('--check')){if(!(await readFile(resolve(directory,file))).equals(bytes))throw Error(`${file} differs from Core; edit Core, then run npm run styles:sync`);}else await writeFile(resolve(directory,file),bytes);
 }
