@@ -3,9 +3,12 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {validateStage,verifyStagedProvenance} from '../scripts/stage-release-guard.mjs';
-import {pkg,lock,pin} from './fixtures/release-source.mjs';
+import {pkg,lock,pin,developmentPkg,developmentLock} from './fixtures/release-source.mjs';
 const sha='a'.repeat(40),repository=pkg.repository.url.replace('git+https://github.com/','').replace('.git','');
 const good={pkg,lock,pin,repository,expectedRepository:repository,ref:'refs/heads/main',protectedRef:'true',sourceSha:sha,eventSha:sha,checkoutSha:sha,remoteMainSha:sha};
+test('checked-in registry dependencies satisfy the publication guard',()=>{
+ assert.equal(validateStage({...good,pkg:developmentPkg,lock:developmentLock}).version,developmentPkg.version);
+});
 test('staging rejects unprotected, stale or substituted source authority',()=>{
  assert.equal(validateStage(good).name,pkg.name);
  for(const changes of [{ref:'refs/heads/develop'},{protectedRef:'false'},{eventSha:'b'.repeat(40)},{remoteMainSha:'b'.repeat(40)},{repository:'untrusted/repo'}])assert.throws(()=>validateStage({...good,...changes}));
