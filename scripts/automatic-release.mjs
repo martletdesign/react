@@ -18,8 +18,8 @@ export function verifyPublishedArchive({bytes,metadata,name,version,expectedSha2
  assert(createHash('sha256').update(bytes).digest('hex')===expectedSha256&&verifyArchive({local:bytes,remote:bytes,metadata,name,version}),'Published registry bytes differ from the approved archive');
 }
 
-export async function waitForPublishedArchive({name,version,expectedSha256,fetcher=fetchTimed,timeoutMs=90000,intervalMs=5000,now=Date.now,pause=ms=>new Promise(resolve=>setTimeout(resolve,ms)),log=entry=>console.log(JSON.stringify(entry))}) {
- assert(timeoutMs>0&&timeoutMs<=90000&&intervalMs>0,'Invalid publication propagation deadline');
+export async function waitForPublishedArchive({name,version,expectedSha256,fetcher=fetchTimed,timeoutMs=300000,intervalMs=5000,now=Date.now,pause=ms=>new Promise(resolve=>setTimeout(resolve,ms)),log=entry=>console.log(JSON.stringify(entry))}) {
+ assert(timeoutMs>0&&timeoutMs<=300000&&intervalMs>0,'Invalid publication propagation deadline');
  const started=now(),deadline=started+timeoutMs;let last={operation:'registry-metadata',status:'not-requested'};
  const transient=new Set([404,408,429,500,502,503,504]);
  const request=async(url,operation)=>{

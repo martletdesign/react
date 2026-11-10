@@ -1,9 +1,9 @@
 # Martlet React
 
-`@martlet/react` supplies 22 native React 19 components, TypeScript declarations and the corresponding Core styles. The 0.2 line preserves the independently published 0.2.0 API; 0.2.1 adds packaged API guidance, standalone delivery verification and enlarged-text corrections. The API remains experimental while consumer and assistive-technology coverage grows. No workbench server is needed to install, build or run it.
+`@martlet/react` 1.0 defines the stable public API for the native React 19 components and TypeScript declarations. It consumes the exact published `@martlet/core@3.0.0` stylesheet foundation. [API.md](API.md) and the generated type declarations define the supported component contract. No workbench server is needed to install, build, or run it.
 
 ```sh
-npm install @martlet/react react@^19 react-dom@^19
+npm install @martlet/react@^1.0.0 react@^19 react-dom@^19
 ```
 
 ```tsx

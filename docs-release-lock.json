@@ -2,8 +2,8 @@
   "family": "martlet",
   "core": {
     "name": "@martlet/core",
-    "version": "2.2.4",
-    "integrity": "sha512-LY8Fkh1KUIdF+dU/RVxPE+XebiXLRCDjeWjnDeqPlrkv7795v9m6vN2kkeu3PdFy5qlQjWQ6TYJnyVLKcJKpIg=="
+    "version": "3.0.0",
+    "integrity": "sha512-pEXoq6i3U3H+nwDi0OoTU4bJQWJ7BMTAJVxoIRP+KlqKXnvDNETBjTnD3WLHZadKr0PKS23t/MzQ/+++YJu56A=="
   },
   "vite": "8.3.5"
 }
