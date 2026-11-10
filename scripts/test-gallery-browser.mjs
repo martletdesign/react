@@ -100,6 +100,23 @@ try {
             const measurement = await page.evaluate(() => ({width: innerWidth, scrollWidth: document.documentElement.scrollWidth}));
             assert.ok(measurement.scrollWidth <= measurement.width, route + ' 200% text ' + mode + ': ' + JSON.stringify(measurement));
           });
+          if (route === 'examples/scientific-workspace/') {
+            await run('scientific.contrast.' + mode, async () => {
+              assert.equal(await page.getByRole('spinbutton').count(), 4);
+              assert.equal(await page.getByRole('button', {name:'Run calculation', exact:true}).count(), 1);
+              const audit = await new AxeBuilder({page}).include('.scientific-page').withRules(['color-contrast']).analyze();
+              assert.deepEqual(audit.violations.map(v => v.id), [], 'Scientific content must remain legible in ' + mode);
+            }, 45_000);
+          }
+          if (route === 'examples/dashboard-analytics/') {
+            await run('enlarged-text.fields.' + mode, async () => {
+              const fields = await page.locator('.dash-controls input,.dash-controls select').evaluateAll(elements => elements.map(e => {
+                const box=e.getBoundingClientRect(), form=e.closest('form').getBoundingClientRect();
+                return {left:box.left, right:box.right, formLeft:form.left, formRight:form.right};
+              }));
+              assert.ok(fields.every(f => f.left >= f.formLeft && f.right <= f.formRight), 'Enlarged controls must stay inside their form');
+            });
+          }
           if (route === 'examples/search/' || route === 'examples/dashboard-administration/') {
             await run('placeholder.contrast.' + mode, async () => {
               const input = page.locator('input[placeholder]:enabled').first();
