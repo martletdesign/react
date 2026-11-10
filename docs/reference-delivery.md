@@ -1,13 +1,32 @@
-# Standalone React reference delivery
+# React reference hosting
 
-The existing static reference builder owns the catalog, not a workbench runtime. From a clean committed checkout, install the exact lockfile, run package checks and build twice into fresh external directories with `npm run build:reference -- /path`. Byte-identical `artifact.json` inventories demonstrate reproducible public payloads for the same source/toolchain. Snapshot timestamps use the commit time, not the wall clock. `version.json` records the repository, exact commit/tree, package, Core integrity, disabled remote archive and both root/subpath snapshots.
+The reference is a static Vite application. Its build prerenders React routes so each page has HTML before JavaScript loads. Cloudflare serves the resulting directory directly.
 
-Candidate assembly may run on experimental branches. Adoption checks only the exact live `develop` or `main` ref with `git ls-remote`, the full local inventory, the deployed manifest and every public byte. It rechecks the accepted ref and live manifest after the scan and fails closed on mismatch, missing files, timeout or source movement. Run `node scripts/verify-reference-deployment.mjs /path https://target-host develop /receipt.json` (or `main`). Directory indexes are requested through their public directory URLs. The verifier does not query PR reviews or historical CI results.
+## Local commands
 
-The intended native Cloudflare static delivery needs no Worker JavaScript or runtime bindings. The existing shared ASSETS adapter remains a supported alternative; if used, set `legacyQueryReference:false` for this output. The standalone root is the examples index, and the former workbench `/reference/` selector frontend is not part of this payload. The advanced archive remains disabled and no archive-writer runtime exists. Do not invent R2 bindings, publication credentials or a replacement foundation.
+```sh
+npm ci
+npm run build
+npm run preview
+```
 
-Before a coordinated rollout record the current Cloudflare Worker/version/deployment identifier, canonical hostname mapping and observed source/payload. Deploy accepted source first to an isolated Workers.dev target and verify the complete artifact before changing the canonical mapping. Then repeat full verification on the actual canonical origin. A build success or deployment API response alone is not acceptance.
+`npm run build` compiles the component package and builds the reference. `npm run build:package` compiles only the library. `npm run build:gallery` (also available as `build:reference`) builds only the reference. Core supplies all CSS. The build works in an ordinary checkout, including uncommitted edits, and does not fetch release tags or reconstruct historical sites.
 
-For a material regression, restore the recorded prior Worker version or canonical hostname mapping using the existing Cloudflare rollback operation, and independently verify that prior payload. Do not rewrite Git history, tags, npm packages or archive snapshots to perform a rollback. If the prior deployment predates artifact inventories, retain the recorded native Worker version and independent public response evidence; do not manufacture a historical inventory or claim administrator immutability.
+## Cloudflare settings
 
-The ratified GitFlow policy requires one fast test check and zero human reviewers. Extended browser/visual suites remain advisory evidence. Coordinated deployment and rollback are operational actions, not additional GitHub approval machinery.
+| Setting | Value |
+| --- | --- |
+| GitHub repository | `martletdesign/react` |
+| Root directory | repository root (`/`) |
+| Build command | `npm run build` |
+| Production deploy command | `npx wrangler deploy` |
+| Branch preview command | `npx wrangler preview` |
+| Static output directory | `examples/react-catalog/dist/martlet` |
+| Production branch | `main` |
+| Development branch | `develop` |
+
+The root `wrangler.json` declares the static asset directory and the empty `previews` block required by Wrangler. It requires no Worker entrypoint, runtime bindings, deployment attestations, archive storage, or custom deployment scripts. Cloudflare's Git integration performs deployments on pushes to the configured branches. Pages can serve the same output directory without a Wrangler deployment command.
+
+For a subpath build, set `NIGHTJAR_BASE=/preview/`; ordinary Cloudflare branch previews use `/` on their own hostname. Use Cloudflare's normal deployment history to roll back.
+
+Website deployment does not publish npm packages or change versions. Package release controls remain separate; `docs-release-lock.json` is retained only for npm release dependency validation, not site builds. Prior package documentation is available in GitHub release tags.

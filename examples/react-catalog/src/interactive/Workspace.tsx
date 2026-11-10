@@ -1,6 +1,5 @@
 import {useEffect,useId,useRef,useState} from 'react';
 import {Button} from 'catalog-family';
-import './workspace.css';
 export type WorkspaceItem={id:string;title:string;summary:string;status:string;owner:string};
 export type WorkspaceSection={id:string;title:string;items:WorkspaceItem[]};
 export function Workspace({section}:{section:WorkspaceSection}) {

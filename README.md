@@ -1,9 +1,9 @@
 # Martlet React
 
-`@martlet/react` supplies 22 native React 19 components, TypeScript declarations and the corresponding Core styles. The 0.2 line preserves the independently published 0.2.0 API; 0.2.1 adds packaged API guidance, standalone delivery verification and enlarged-text corrections. The API remains experimental while consumer and assistive-technology coverage grows. No workbench server is needed to install, build or run it.
+`@martlet/react` 1.0 defines the stable public API for the native React 19 components and TypeScript declarations. It consumes the exact published `@martlet/core@3.0.0` stylesheet foundation. [API.md](API.md) and the generated type declarations define the supported component contract. No workbench server is needed to install, build, or run it.
 
 ```sh
-npm install @martlet/react react@^19 react-dom@^19
+npm install @martlet/react@^1.0.0 react@^19 react-dom@^19
 ```
 
 ```tsx
@@ -29,9 +29,9 @@ Use the family scope and `data-martlet="light"` or `"dark"` on the application b
 
 Use Node 24.19.0, run `npm ci --ignore-scripts`, then `npm test`. The editable independent catalog contains all 50 canonical examples, three dashboards and a scientific workspace. These use representative local data; saving, filtering, exports and recovery demonstrate application patterns, not a connected production service. Browser checks retain Chromium, Firefox and WebKit at root and `/preview/`, with bounded operations, diagnostics and failure deadlines. Automated checks do not replace manual assistive-technology review.
 
-`npm run build:gallery` writes `examples/react-catalog/dist/martlet`; start at `/examples/`. Set `NIGHTJAR_BASE=/preview/` to exercise subpath delivery. From a clean committed checkout, `npm run build:reference -- /fresh/output/path` assembles both bases and checksum-verified `/docs/v/0.2.1/` snapshots. `version.json` records source and Core identity; `artifact.json` inventories every delivered file. `node scripts/verify-reference-deployment.mjs /output https://host develop` verifies the live accepted branch and every public payload before adoption. Deployment operations remain coordinated; source assembly alone does not prove a canonical website has been cut over. Explicit `/examples/` routes replace the former workbench catalog’s experimental root query selectors; this output does not ship that separate selector frontend or redirect `/reference/` to an unrelated content example.
+`npm run build` compiles the package and uses Vite to build the static reference at `examples/react-catalog/dist/martlet/`. Run `npm run preview` to inspect it locally. `npm run build:package` compiles only the npm library; `npm run build:gallery` and `npm run build:reference` build only the reference. Set `NIGHTJAR_BASE=/preview/` to exercise subpath delivery.
 
-The reference output supports native Cloudflare static delivery with no Worker JavaScript or runtime bindings. If the existing custom adapter is used instead, its only binding is ASSETS and its legacy query redirect must remain disabled. `docs-delivery.json` keeps the advanced remote archive disabled; this static delivery makes no administrator-immutable storage or independent anti-rollback guarantee. See [PROVENANCE.md](PROVENANCE.md) for retained source attribution.
+Cloudflare builds from the repository root with `npm run build`, deploys production with `npx wrangler deploy`, and creates branch previews with `npx wrangler preview`. The checked-in `wrangler.json` serves the generated static files. See [hosting settings](docs/reference-delivery.md). No custom Worker or archive service is involved. See [PROVENANCE.md](PROVENANCE.md) for retained source attribution.
 
 ## Publication
 
@@ -40,3 +40,11 @@ The repository remains `private:true` to prevent accidental local publication. O
 Reproduce publishable archives using npm 11.15.0: export the exact commit with `git archive`, change only the exported manifest to `private:false`, install and build there, run `node scripts/normalize-package-modes.mjs .`, then `npm pack --ignore-scripts`. The normalizer requires an isolated export and rejects symlinks. Verify the registry tarball and successful `npm audit signatures --json --include-attestations` output with `RELEASE_TAG=v0.2.1 APPROVED_SHA=<accepted-main-sha> node scripts/tag-release-cli.mjs verify-stage-provenance <audit.json> <archive.tgz>`.
 
 Acceptance follows the [ratified GitFlow policy](https://github.com/k3jph/design-workbench/blob/develop/docs/GITFLOW-ACCEPTANCE.md): one fast required `test` check, zero required human reviewers, advisory extended suites. Accepted `develop` and `main` authorize their respective deployments. Source and artifact identity checks do not reconstruct PR reviews or historical CI results.
+
+### Shared presentation
+
+Core owns all React presentation. `src/styles.css` is only a Core import. The reference build copies `martlet.css`, `reference-fonts.css`, and the optional React anatomy adapter directly from Core, recording their hashes in `core-styles.json`. `martlet.css` is the same file consumed by Astro and Jekyll. Change visual rules in Core, update the pinned dependency, and run `npm run styles:sync`; do not add page styles or inline CSS.
+
+The development reference can use an immutable Core commit without a package release. Earlier package documentation remains available in GitHub release tags. Updating the development reference does not publish npm packages.
+
+Equivalent reference examples target the same typography, spacing, dimensions, and responsive layout as Astro and Jekyll when content, viewport, and appearance mode match. React retains native components, hooks, and state ownership; framework choice does not introduce a separate visual treatment.

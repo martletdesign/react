@@ -18,8 +18,8 @@ export function verifyPublishedArchive({bytes,metadata,name,version,expectedSha2
  assert(createHash('sha256').update(bytes).digest('hex')===expectedSha256&&verifyArchive({local:bytes,remote:bytes,metadata,name,version}),'Published registry bytes differ from the approved archive');
 }
 
-export async function waitForPublishedArchive({name,version,expectedSha256,fetcher=fetchTimed,timeoutMs=90000,intervalMs=5000,now=Date.now,pause=ms=>new Promise(resolve=>setTimeout(resolve,ms)),log=entry=>console.log(JSON.stringify(entry))}) {
- assert(timeoutMs>0&&timeoutMs<=90000&&intervalMs>0,'Invalid publication propagation deadline');
+export async function waitForPublishedArchive({name,version,expectedSha256,fetcher=fetchTimed,timeoutMs=300000,intervalMs=5000,now=Date.now,pause=ms=>new Promise(resolve=>setTimeout(resolve,ms)),log=entry=>console.log(JSON.stringify(entry))}) {
+ assert(timeoutMs>0&&timeoutMs<=300000&&intervalMs>0,'Invalid publication propagation deadline');
  const started=now(),deadline=started+timeoutMs;let last={operation:'registry-metadata',status:'not-requested'};
  const transient=new Set([404,408,429,500,502,503,504]);
  const request=async(url,operation)=>{
@@ -133,8 +133,8 @@ async function plan(api,env) {
  assert(main.data?.ref==='refs/heads/main'&&main.data.object?.type==='commit','Invalid current main reference');
  const sha=authorizeRun({event,workflow:workflow.data,expectedRepository:repository,checkoutSha:git(['rev-parse','HEAD']),remoteMainSha:main.data.object.sha,protectedRef:env.REF_PROTECTED});
  assert(env.GITHUB_REPOSITORY===repository&&env.APPROVED_SHA===sha,'Automatic source identity changed');
- const [pkg,lock,pin,delivery]=await Promise.all(['package.json','package-lock.json','docs-release-lock.json','docs-delivery.json'].map(path=>readFile(path,'utf8').then(JSON.parse)));
- const identity=validateStage({pkg,lock,pin,delivery,repository,expectedRepository:repository,ref:'refs/heads/main',protectedRef:env.REF_PROTECTED,sourceSha:sha,eventSha:sha,checkoutSha:sha,remoteMainSha:main.data.object.sha});
+ const [pkg,lock,pin]=await Promise.all(['package.json','package-lock.json','docs-release-lock.json'].map(path=>readFile(path,'utf8').then(JSON.parse)));
+ const identity=validateStage({pkg,lock,pin,repository,expectedRepository:repository,ref:'refs/heads/main',protectedRef:env.REF_PROTECTED,sourceSha:sha,eventSha:sha,checkoutSha:sha,remoteMainSha:main.data.object.sha});
  const state=await registryState(fetchTimed,registry,identity.name,identity.version);
  assert(state==='absent'||state==='present','Registry version identity is unknown; no publication permitted');
  return {...identity,sha,publish:state==='absent'};

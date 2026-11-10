@@ -15,9 +15,9 @@ test('buttons preserve their safe default and explicit disabled state during SSR
   assert.match(html, /disabled=""/);
   assert.match(html, />Save<\/button>/);
 });
-test('styles use the matching published core and preserve scoped identity', async () => {
+test('styles use the matching Core stylesheet without local definitions', async () => {
   const css = await readFile(new URL('../dist/styles.css', import.meta.url), 'utf8');
-  assert.match(css, /@import ["']@martlet\/core\/css["']/);
-  assert.match(css, /\.martlet\b/);
+  assert.ok(css.includes('@import "@martlet/core/react.css"'));
+  assert.doesNotMatch(css, /[{}]/);
   assert.doesNotMatch(css, /@(?:martlet|krigsvold)\/theme/);
 });
