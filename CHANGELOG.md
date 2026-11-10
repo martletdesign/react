@@ -1,5 +1,10 @@
 # @martlet/react changelog
 
+## 1.0.1
+
+- Consume Core 3.0.1 to restore narrow and enlarged-text control wrapping.
+- Retain the React 1 API and canonical Core ownership of all visual rules.
+
 ## 1.0.0
 
 - Establish the stable React 19 component and TypeScript API described in API.md.
