@@ -42,7 +42,7 @@ if(command==='preflight') {
 } else if(command==='verify-registry') {
   const local=await readFile(process.argv[3]);
   let verified=false;
-  for(let attempt=0;attempt<12;attempt++) {
+  for(let attempt=0;attempt<60;attempt++) {
     try {
       const r=await fetchTimed(versionURL); if(r.status!==200) throw Error('Registry version not available');
       const metadata=await r.json(); const tar=new URL(metadata.dist.tarball);
@@ -53,7 +53,7 @@ if(command==='preflight') {
       const remote=Buffer.concat(chunks);
       if(!verifyArchive({local,remote,metadata,name,version})) throw Error('Registry artifact differs from reviewed archive');
       verified=true; break;
-    } catch (e) {if(attempt===11) throw e; await new Promise(resolve=>setTimeout(resolve,5000));}
+    } catch (e) {if(attempt===59) throw e; await new Promise(resolve=>setTimeout(resolve,5000));}
   }
   if(!verified) throw Error('Registry verification incomplete');
 } else {throw Error('Unknown release guard operation');}
